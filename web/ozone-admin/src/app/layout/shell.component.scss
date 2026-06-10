@@ -1,0 +1,46 @@
+.shell-container {
+  height: 100vh;
+}
+
+.shell-sidenav {
+  width: 240px;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.brand {
+  padding: 1.25rem 1rem 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.active {
+  background: rgba(25, 118, 210, 0.08);
+}
+
+.shell-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.toolbar-title {
+  font-size: 1rem;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.branch-select {
+  width: 220px;
+  margin-right: 1rem;
+}
+
+.user-name {
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.shell-content {
+  padding: 1.5rem;
+}

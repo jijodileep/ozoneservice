@@ -1,0 +1,12 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Dashboard</mat-card-title>
+    <mat-card-subtitle>Web admin shell</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <p>Welcome, {{ auth.profile()?.displayName }}.</p>
+    <p>Roles: {{ auth.profile()?.roles?.join(', ') || '—' }}</p>
+    <p>Selected branch: {{ branch.selectedBranchId() || '—' }}</p>
+    <p class="hint">API calls include JWT and X-Branch-Id headers automatically.</p>
+  </mat-card-content>
+</mat-card>

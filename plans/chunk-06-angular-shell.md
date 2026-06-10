@@ -2,7 +2,7 @@
 
 **Wave:** 1 — Client shells  
 **Depends on:** [chunk-05](chunk-05-authorization.md)  
-**Status:** pending
+**Status:** done
 
 ## Goal
 
@@ -10,14 +10,14 @@ Angular admin app with login, JWT interceptor, layout, branch selector, and rout
 
 ## Tasks
 
-- [ ] Create `web/ozone-admin` — Angular 19+ standalone, Angular Material
-- [ ] Login page → calls `POST /api/auth/login`
-- [ ] Store JWT in memory or sessionStorage
-- [ ] HTTP interceptor: attach `Authorization` + `X-Branch-Id` headers
-- [ ] App layout: sidebar, header, branch selector dropdown
-- [ ] Route guards: `authGuard`, `roleGuard`
-- [ ] Placeholder dashboard route after login
-- [ ] Environment files: `apiUrl` for local API
+- [x] Create `web/ozone-admin` — Angular 19+ standalone, Angular Material
+- [x] Login page → calls `POST /api/auth/login`
+- [x] Store JWT in memory or sessionStorage
+- [x] HTTP interceptor: attach `Authorization` + `X-Branch-Id` headers
+- [x] App layout: sidebar, header, branch selector dropdown
+- [x] Route guards: `authGuard`, `roleGuard`
+- [x] Placeholder dashboard route after login
+- [x] Environment files: `apiUrl` for local API
 
 ## Files to create
 

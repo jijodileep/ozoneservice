@@ -72,7 +72,16 @@ curl http://localhost:5055/health
 
 Expected: `{"status":"healthy","database":"connected","timestamp":"..."}`
 
-### 5. API docs & auth (dev)
+### 5. Angular web admin (dev)
+
+```powershell
+cd web/ozone-admin
+npm start
+```
+
+Open http://localhost:4200 and sign in with a tenant web user (see [`docs/dev-credentials.md`](docs/dev-credentials.md)).
+
+### 6. API docs & auth (dev)
 
 - Swagger UI: http://localhost:5055/swagger
 - Dev login: `POST /api/auth/login`
@@ -165,7 +174,7 @@ See [`docs/dev-credentials.md`](docs/dev-credentials.md#postgresql-docker).
 
 
 
-Implementation is split into small chunks under [`plans/`](plans/README.md). Chunks 01–05 and 33–34 are complete; next is [chunk-06](plans/chunk-06-angular-shell.md).
+Implementation is split into small chunks under [`plans/`](plans/README.md). Chunks 01–06 and 33–34 are complete; next is [chunk-07](plans/chunk-07-flutter-shell.md).
 
 ### EF Core migrations
 

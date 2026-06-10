@@ -1,0 +1,50 @@
+<mat-sidenav-container class="shell-container">
+  <mat-sidenav mode="side" opened class="shell-sidenav">
+    <div class="brand">Ozone Admin</div>
+    <mat-nav-list>
+      @if (auth.isPlatformAdmin()) {
+        <a mat-list-item routerLink="/platform" routerLinkActive="active">
+          <mat-icon matListItemIcon>store</mat-icon>
+          <span matListItemTitle>Shops</span>
+        </a>
+      } @else {
+        <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
+          <mat-icon matListItemIcon>dashboard</mat-icon>
+          <span matListItemTitle>Dashboard</span>
+        </a>
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <mat-toolbar color="primary" class="shell-toolbar">
+      <span class="toolbar-title">
+        {{ auth.isPlatformAdmin() ? 'Platform Console' : 'Mobile Service Center' }}
+      </span>
+      <span class="spacer"></span>
+
+      @if (branch.branches().length) {
+        <mat-form-field appearance="outline" class="branch-select" subscriptSizing="dynamic">
+          <mat-label>Branch</mat-label>
+          <mat-select
+            [value]="branch.selectedBranchId()"
+            (valueChange)="onBranchChange($event)"
+          >
+            @for (item of branch.branches(); track item.id) {
+              <mat-option [value]="item.id">{{ item.name }} ({{ item.code }})</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+
+      <span class="user-name">{{ auth.profile()?.displayName }}</span>
+      <button mat-icon-button type="button" aria-label="Logout" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </mat-toolbar>
+
+    <main class="shell-content">
+      <router-outlet />
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>
