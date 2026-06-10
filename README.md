@@ -70,9 +70,40 @@ curl http://localhost:5055/health
 
 
 
-Expected: `{"status":"healthy","timestamp":"..."}`
+Expected: `{"status":"healthy","database":"connected","timestamp":"..."}`
 
+### 5. API docs & auth (dev)
 
+- Swagger UI: http://localhost:5055/swagger
+- Dev login: `POST /api/auth/login`
+
+```powershell
+$body = '{"email":"admin@localhost.dev","password":"Admin@123"}'
+Invoke-RestMethod -Uri http://localhost:5055/api/auth/login -Method Post -Body $body -ContentType "application/json"
+```
+
+| Dev user | Value |
+|----------|-------|
+| Email | `admin@localhost.dev` |
+| Password | `Admin@123` |
+| Role | `TenantAdmin` |
+
+**Super Admin (create shops):**
+
+| Field | Value |
+|-------|-------|
+| Email | `superadmin@localhost.dev` |
+| Password | `Super@123` |
+| Role | `PlatformSuperAdmin` |
+
+Platform API (Bearer token required):
+
+- `GET /api/platform/plans`
+- `POST /api/platform/shops` — creates shop + default branch + ShopAdmin
+- `GET /api/platform/shops`
+- `PATCH /api/platform/shops/{id}/suspend`
+
+After each chunk: `.\scripts\push-chunk.ps1 -Chunk "NN" -Message "..."`
 
 ## Solution structure
 
@@ -164,7 +195,7 @@ Host=localhost;Port=5432;Database=ozone_mobile_service;Username=ozone;Password=o
 
 
 
-Implementation is split into small chunks under [`plans/`](plans/README.md). Chunks 01–02 are complete; next is [chunk-03](plans/chunk-03-auth-api.md).
+Implementation is split into small chunks under [`plans/`](plans/README.md). Chunks 01–03, 33–34 (super admin API) are complete; next is [chunk-05](plans/chunk-05-authorization.md).
 
 ### EF Core migrations
 

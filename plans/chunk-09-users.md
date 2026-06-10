@@ -12,6 +12,7 @@ User management with branch assignment and role selection (web setup).
 
 - [ ] `UserBranch` join entity (UserId, BranchId)
 - [ ] API: `GET/POST/PUT /api/users`, assign branches, assign roles
+- [ ] **Enforce plan limit:** reject create if tenant active users >= `SubscriptionPlan.MaxUsers` (see [chunk-34](chunk-34-saas-plans-limits.md))
 - [ ] Angular: user list, create user, assign role + branch(es)
 - [ ] Password reset / initial password flow (simple)
 

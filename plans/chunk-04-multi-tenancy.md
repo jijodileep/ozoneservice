@@ -10,7 +10,7 @@ Tenant entity, tenant resolution from JWT, and EF global query filter on `Tenant
 
 ## Tasks
 
-- [ ] Create `Tenant` entity: `Id`, `Name`, `Code`, `IsActive`, `Plan`
+- [ ] Create `Tenant` entity: `Id`, `Name`, `Code`, `IsActive`, `SubscriptionPlanId`, `SubscriptionExpiresAt`
 - [ ] Add `TenantId` to `ApplicationUser`; migration
 - [ ] `ITenantContext` service (current tenant from JWT claim)
 - [ ] `TenantResolutionMiddleware` or claims transformation

@@ -10,7 +10,8 @@ Role-based access, branch scoping, and enforce **mobile-only writes** for operat
 
 ## Tasks
 
-- [ ] Define roles: `TenantAdmin`, `ShopAdmin`, `ShopStaff`, `Accountant`
+- [ ] Define roles: `PlatformSuperAdmin`, `TenantAdmin`, `ShopAdmin`, `ShopStaff`, `Accountant`
+- [ ] `PlatformSuperAdmin` bypasses tenant filter; accesses `/api/platform/*` only
 - [ ] Seed roles; assign to dev users
 - [ ] `IBranchContext` — selected branch from header claim or user default
 - [ ] Authorization policies:

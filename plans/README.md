@@ -10,6 +10,11 @@ Small, focused plans to execute **one chunk at a time**. Complete each plan full
 2. Say **"execute chunk-01"** (or the chunk number) in Cursor to implement it.
 3. Verify **Done criteria** in that plan.
 4. Mark status `done` in this index, then move to the next chunk.
+5. **Auto-push to Git** after each chunk:
+
+```powershell
+.\scripts\push-chunk.ps1 -Chunk "33" -Message "Chunk 33: Super Admin create shops"
+```
 
 ## Milestones
 
@@ -17,7 +22,8 @@ Small, focused plans to execute **one chunk at a time**. Complete each plan full
 |-----------|--------|---------|
 | MVP | 01–17 | Jobs on mobile, view on web |
 | Full product | 01–30 | Billing, inventory, reports |
-| Launch | 01–32 | Onboarding + production deploy |
+| Launch | 01–32 | Production deploy |
+| SaaS platform | 01–35 | Super admin, plans, device login control |
 
 ## Chunk index
 
@@ -25,9 +31,9 @@ Small, focused plans to execute **one chunk at a time**. Complete each plan full
 |---|------|------|------------|--------|
 | 01 | [chunk-01-foundation.md](chunk-01-foundation.md) | Foundation | — | done |
 | 02 | [chunk-02-ef-base.md](chunk-02-ef-base.md) | Foundation | 01 | done |
-| 03 | [chunk-03-auth-api.md](chunk-03-auth-api.md) | Foundation | 02 | **next** |
-| 04 | [chunk-04-multi-tenancy.md](chunk-04-multi-tenancy.md) | Foundation | 03 | pending |
-| 05 | [chunk-05-authorization.md](chunk-05-authorization.md) | Foundation | 04 | pending |
+| 03 | [chunk-03-auth-api.md](chunk-03-auth-api.md) | Foundation | 02 | done |
+| 04 | [chunk-04-multi-tenancy.md](chunk-04-multi-tenancy.md) | Foundation | 03 | partial |
+| 05 | [chunk-05-authorization.md](chunk-05-authorization.md) | Foundation | 04 | **next** |
 | 06 | [chunk-06-angular-shell.md](chunk-06-angular-shell.md) | Client shells | 05 | pending |
 | 07 | [chunk-07-flutter-shell.md](chunk-07-flutter-shell.md) | Client shells | 05 | pending |
 | 08 | [chunk-08-branches.md](chunk-08-branches.md) | Setup | 06 | pending |
@@ -55,6 +61,9 @@ Small, focused plans to execute **one chunk at a time**. Complete each plan full
 | 30 | [chunk-30-reports.md](chunk-30-reports.md) | Launch | 28 | pending |
 | 31 | [chunk-31-onboarding.md](chunk-31-onboarding.md) | Launch | 08 | pending |
 | 32 | [chunk-32-deploy.md](chunk-32-deploy.md) | Launch | 30 | pending |
+| 33 | [chunk-33-super-admin-shops.md](chunk-33-super-admin-shops.md) | SaaS | 08, 34 | done |
+| 34 | [chunk-34-saas-plans-limits.md](chunk-34-saas-plans-limits.md) | SaaS | 04 | done |
+| 35 | [chunk-35-device-session-control.md](chunk-35-device-session-control.md) | SaaS | 03, 34 | pending |
 
 ## Sprint grouping (optional)
 
@@ -66,9 +75,13 @@ Small, focused plans to execute **one chunk at a time**. Complete each plan full
 | 4 | 19–24 |
 | 5 | 25–29 |
 | 6 | 30–32 |
+| 7 | 33–35 |
 
 ## Key product rules (all chunks)
 
 - **Stack:** .NET 10, Angular web, Flutter mobile, PostgreSQL
 - **Entries:** all operational CRUD on **Flutter**; web is setup + view + reports
 - **Customers:** shared by mobile number per tenant; list shows **invoiced only**
+- **Onboarding:** **Super Admin creates shops** with default ShopAdmin (chunk 33)
+- **Plans:** user/branch limits per subscription plan (chunk 34)
+- **Sessions:** block multiple device logins per plan (chunk 35)

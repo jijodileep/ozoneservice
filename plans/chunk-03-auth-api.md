@@ -2,7 +2,7 @@
 
 **Wave:** 0 — Foundation  
 **Depends on:** [chunk-02](chunk-02-ef-base.md)  
-**Status:** pending
+**Status:** done (pushed)
 
 ## Goal
 
@@ -10,15 +10,15 @@ ASP.NET Core Identity + JWT authentication: login, refresh, and current user end
 
 ## Tasks
 
-- [ ] Create `ApplicationUser` extending IdentityUser (add `TenantId`, `DisplayName`)
-- [ ] Configure Identity + EF stores on `AppDbContext`
-- [ ] JWT settings in `appsettings.json` (secret, issuer, expiry)
-- [ ] Endpoints:
+- [x] Create `ApplicationUser` extending IdentityUser (add `TenantId`, `DisplayName`)
+- [x] Configure Identity + EF stores on `AppDbContext`
+- [x] JWT settings in `appsettings.json` (secret, issuer, expiry)
+- [x] Endpoints:
   - `POST /api/auth/login`
   - `POST /api/auth/refresh`
   - `GET /api/auth/me`
-- [ ] Add Swagger + JWT bearer auth in Swagger UI
-- [ ] Seed one dev user (optional, for local testing)
+- [x] Add Swagger + JWT bearer auth in Swagger UI
+- [x] Seed one dev user (optional, for local testing)
 
 ## Files to create/modify
 
@@ -38,6 +38,11 @@ ASP.NET Core Identity + JWT authentication: login, refresh, and current user end
 
 - POST login with seed user → 200 + JWT
 - GET `/api/auth/me` with token → user profile
+
+## Deferred to later chunks
+
+- **Device session / block multi-login:** [chunk-35](chunk-35-device-session-control.md)
+- **Plan-based login limits:** [chunk-34](chunk-34-saas-plans-limits.md)
 
 ## Next chunk
 

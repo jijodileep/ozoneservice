@@ -1,0 +1,22 @@
+using OzoneMobileService.Application.DTOs.Platform;
+
+namespace OzoneMobileService.Application.Interfaces;
+
+public interface IPlatformService
+{
+    Task<IReadOnlyList<SubscriptionPlanResponse>> GetPlansAsync(CancellationToken cancellationToken = default);
+
+    Task<SubscriptionPlanResponse?> CreatePlanAsync(
+        CreateSubscriptionPlanRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<ShopResponse>> GetShopsAsync(CancellationToken cancellationToken = default);
+
+    Task<ShopResponse?> CreateShopAsync(CreateShopRequest request, CancellationToken cancellationToken = default);
+
+    Task<bool> SuspendShopAsync(Guid tenantId, CancellationToken cancellationToken = default);
+
+    Task<bool> ActivateShopAsync(Guid tenantId, CancellationToken cancellationToken = default);
+
+    Task<bool> AssignPlanAsync(Guid tenantId, Guid planId, CancellationToken cancellationToken = default);
+}

@@ -1,0 +1,22 @@
+namespace OzoneMobileService.Domain.Entities;
+
+public class Tenant
+{
+    public Guid Id { get; set; }
+
+    public string Name { get; set; } = string.Empty;
+
+    public string Code { get; set; } = string.Empty;
+
+    public bool IsActive { get; set; } = true;
+
+    public Guid SubscriptionPlanId { get; set; }
+
+    public SubscriptionPlan SubscriptionPlan { get; set; } = null!;
+
+    public DateTime? SubscriptionExpiresAt { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
+    public ICollection<Branch> Branches { get; set; } = [];
+}
