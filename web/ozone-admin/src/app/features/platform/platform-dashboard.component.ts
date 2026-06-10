@@ -1,17 +1,14 @@
+import { DatePipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTableModule } from '@angular/material/table';
+import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
+import { PlanSummary, ShopSummary } from '../../core/platform/platform.models';
 import { PlatformService } from '../../core/platform/platform.service';
-import { ShopSummary } from '../../core/platform/platform.models';
 
 @Component({
   selector: 'app-platform-dashboard',
   standalone: true,
-  imports: [MatCardModule, MatTableModule, MatChipsModule, MatProgressSpinnerModule],
+  imports: [DatePipe, NgbAlertModule],
   templateUrl: './platform-dashboard.component.html',
-  styleUrl: './platform-dashboard.component.scss',
 })
 export class PlatformDashboardComponent implements OnInit {
   private readonly platform = inject(PlatformService);
@@ -19,17 +16,11 @@ export class PlatformDashboardComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly shops = signal<ShopSummary[]>([]);
-
-  readonly displayedColumns = [
-    'name',
-    'code',
-    'planName',
-    'branchCount',
-    'userCount',
-    'isActive',
-  ];
+  readonly plans = signal<PlanSummary[]>([]);
+  readonly flash = signal<string | null>(null);
 
   ngOnInit(): void {
+    this.platform.getPlans().subscribe({ next: (plans) => this.plans.set(plans) });
     this.platform.getShops().subscribe({
       next: (shops) => {
         this.shops.set(shops);
@@ -40,5 +31,32 @@ export class PlatformDashboardComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  usageLabel(shop: ShopSummary): string {
+    return `${shop.userCount}/${shop.maxUsers} users · ${shop.branchCount}/${shop.maxBranches} branches`;
+  }
+
+  isOverLimit(shop: ShopSummary): boolean {
+    return shop.userCount > shop.maxUsers || shop.branchCount > shop.maxBranches;
+  }
+
+  planIdForShop(shop: ShopSummary): string | undefined {
+    return this.plans().find((p) => p.code === shop.planCode)?.id;
+  }
+
+  onAssignPlan(shop: ShopSummary, event: Event): void {
+    const planId = (event.target as HTMLSelectElement).value;
+    this.platform.assignPlan(shop.id, planId).subscribe({
+      next: () => {
+        this.flash.set(`Plan updated for ${shop.name}`);
+        this.reloadShops();
+      },
+      error: (err) => this.flash.set(err.error?.message ?? 'Could not assign plan.'),
+    });
+  }
+
+  private reloadShops(): void {
+    this.platform.getShops().subscribe({ next: (shops) => this.shops.set(shops) });
   }
 }

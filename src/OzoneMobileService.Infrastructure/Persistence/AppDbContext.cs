@@ -20,6 +20,8 @@ public class AppDbContext(
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<Branch> Branches => Set<Branch>();
     public DbSet<UserBranch> UserBranches => Set<UserBranch>();
+    public DbSet<AppNotification> AppNotifications => Set<AppNotification>();
+    public DbSet<Invoice> Invoices => Set<Invoice>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -44,6 +46,36 @@ public class AppDbContext(
             entity.HasIndex(p => p.Code).IsUnique();
             entity.Property(p => p.Name).HasMaxLength(100).IsRequired();
             entity.Property(p => p.Code).HasMaxLength(50).IsRequired();
+            entity.Property(p => p.Price).HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<AppNotification>(entity =>
+        {
+            entity.ToTable("app_notifications");
+            entity.HasKey(n => n.Id);
+            entity.Property(n => n.RoleTarget).HasMaxLength(50).IsRequired();
+            entity.Property(n => n.Title).HasMaxLength(200).IsRequired();
+            entity.Property(n => n.Message).HasMaxLength(2000).IsRequired();
+            entity.Property(n => n.NotificationType).HasMaxLength(50).IsRequired();
+            entity.HasIndex(n => new { n.TenantId, n.RoleTarget, n.IsRead });
+        });
+
+        modelBuilder.Entity<Invoice>(entity =>
+        {
+            entity.ToTable("invoices");
+            entity.HasKey(i => i.Id);
+            entity.HasIndex(i => new { i.TenantId, i.InvoiceNumber }).IsUnique();
+            entity.Property(i => i.InvoiceNumber).HasMaxLength(50).IsRequired();
+            entity.Property(i => i.CustomerName).HasMaxLength(200).IsRequired();
+            entity.Property(i => i.CustomerPhone).HasMaxLength(20).IsRequired();
+            entity.Property(i => i.Status).HasMaxLength(20).IsRequired();
+            entity.Property(i => i.SubTotal).HasPrecision(18, 2);
+            entity.Property(i => i.TaxAmount).HasPrecision(18, 2);
+            entity.Property(i => i.TotalAmount).HasPrecision(18, 2);
+            entity.HasOne(i => i.Branch)
+                .WithMany()
+                .HasForeignKey(i => i.BranchId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Tenant>(entity =>

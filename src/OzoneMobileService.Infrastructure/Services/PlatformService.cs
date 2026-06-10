@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OzoneMobileService.Application.DTOs.Platform;
+using OzoneMobileService.Application.Exceptions;
 using OzoneMobileService.Application.Interfaces;
 using OzoneMobileService.Domain.Entities;
 using OzoneMobileService.Infrastructure.Persistence;
@@ -10,16 +11,25 @@ namespace OzoneMobileService.Infrastructure.Services;
 
 public class PlatformService(
     AppDbContext dbContext,
-    UserManager<ApplicationUser> userManager) : IPlatformService
+    UserManager<ApplicationUser> userManager,
+    ISubscriptionLimitService subscriptionLimitService) : IPlatformService
 {
     public async Task<IReadOnlyList<SubscriptionPlanResponse>> GetPlansAsync(
         CancellationToken cancellationToken = default)
     {
-        return await dbContext.SubscriptionPlans
+        var plans = await dbContext.SubscriptionPlans
             .AsNoTracking()
-            .OrderBy(p => p.Name)
-            .Select(p => MapPlan(p))
+            .OrderBy(p => p.TierOrder)
             .ToListAsync(cancellationToken);
+
+        var tenantCounts = await dbContext.Tenants
+            .GroupBy(t => t.SubscriptionPlanId)
+            .Select(g => new { PlanId = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.PlanId, x => x.Count, cancellationToken);
+
+        return plans
+            .Select(p => MapPlan(p, tenantCounts.GetValueOrDefault(p.Id)))
+            .ToList();
     }
 
     public async Task<SubscriptionPlanResponse?> CreatePlanAsync(
@@ -40,6 +50,9 @@ public class PlatformService(
             MaxUsers = request.MaxUsers,
             MaxBranches = request.MaxBranches,
             MaxDevicesPerUser = request.MaxDevicesPerUser,
+            Price = request.Price,
+            BillingPeriodMonths = request.BillingPeriodMonths,
+            TierOrder = request.TierOrder,
             AllowWebLogin = request.AllowWebLogin,
             AllowMobileLogin = request.AllowMobileLogin,
             IsActive = true
@@ -47,7 +60,53 @@ public class PlatformService(
 
         dbContext.SubscriptionPlans.Add(plan);
         await dbContext.SaveChangesAsync(cancellationToken);
-        return MapPlan(plan);
+        return MapPlan(plan, 0);
+    }
+
+    public async Task<SubscriptionPlanResponse?> UpdatePlanAsync(
+        Guid planId,
+        UpdateSubscriptionPlanRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var plan = await dbContext.SubscriptionPlans.FirstOrDefaultAsync(p => p.Id == planId, cancellationToken);
+        if (plan is null)
+        {
+            return null;
+        }
+
+        plan.Name = request.Name.Trim();
+        plan.MaxUsers = request.MaxUsers;
+        plan.MaxBranches = request.MaxBranches;
+        plan.MaxDevicesPerUser = request.MaxDevicesPerUser;
+        plan.Price = request.Price;
+        plan.BillingPeriodMonths = request.BillingPeriodMonths;
+        plan.TierOrder = request.TierOrder;
+        plan.AllowWebLogin = request.AllowWebLogin;
+        plan.AllowMobileLogin = request.AllowMobileLogin;
+        plan.IsActive = request.IsActive;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        var tenantCount = await dbContext.Tenants.CountAsync(t => t.SubscriptionPlanId == planId, cancellationToken);
+        return MapPlan(plan, tenantCount);
+    }
+
+    public async Task<bool> DeletePlanAsync(Guid planId, CancellationToken cancellationToken = default)
+    {
+        var plan = await dbContext.SubscriptionPlans.FirstOrDefaultAsync(p => p.Id == planId, cancellationToken);
+        if (plan is null)
+        {
+            return false;
+        }
+
+        if (await dbContext.Tenants.AnyAsync(t => t.SubscriptionPlanId == planId, cancellationToken))
+        {
+            throw new PlanInUseException();
+        }
+
+        dbContext.SubscriptionPlans.Remove(plan);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return true;
     }
 
     public async Task<IReadOnlyList<ShopResponse>> GetShopsAsync(
@@ -67,16 +126,7 @@ public class PlatformService(
             .ToDictionaryAsync(x => x.TenantId, x => x.Count, cancellationToken);
 
         return tenants
-            .Select(t => new ShopResponse(
-                t.Id,
-                t.Name,
-                t.Code,
-                t.IsActive,
-                t.SubscriptionPlan.Name,
-                t.SubscriptionPlan.Code,
-                t.Branches.Count,
-                userCounts.GetValueOrDefault(t.Id),
-                t.CreatedAt))
+            .Select(t => MapShop(t, userCounts.GetValueOrDefault(t.Id), t.Branches.Count))
             .ToList();
     }
 
@@ -117,6 +167,7 @@ public class PlatformService(
                 Code = code,
                 IsActive = true,
                 SubscriptionPlanId = plan.Id,
+                SubscriptionExpiresAt = now.AddMonths(plan.BillingPeriodMonths),
                 CreatedAt = now
             };
 
@@ -162,16 +213,7 @@ public class PlatformService(
             await dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
-            return new ShopResponse(
-                tenant.Id,
-                tenant.Name,
-                tenant.Code,
-                tenant.IsActive,
-                plan.Name,
-                plan.Code,
-                1,
-                1,
-                tenant.CreatedAt);
+            return MapShop(tenant, 1, 1, plan);
         }
         catch
         {
@@ -211,7 +253,9 @@ public class PlatformService(
         Guid planId,
         CancellationToken cancellationToken = default)
     {
-        var tenant = await dbContext.Tenants.FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
+        var tenant = await dbContext.Tenants
+            .Include(t => t.SubscriptionPlan)
+            .FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
         var plan = await dbContext.SubscriptionPlans
             .FirstOrDefaultAsync(p => p.Id == planId && p.IsActive, cancellationToken);
 
@@ -220,12 +264,15 @@ public class PlatformService(
             return false;
         }
 
+        await subscriptionLimitService.ValidatePlanAssignmentAsync(tenantId, planId, cancellationToken);
+
         tenant.SubscriptionPlanId = plan.Id;
+        tenant.SubscriptionExpiresAt = DateTime.UtcNow.AddMonths(plan.BillingPeriodMonths);
         await dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    private static SubscriptionPlanResponse MapPlan(SubscriptionPlan plan) =>
+    private static SubscriptionPlanResponse MapPlan(SubscriptionPlan plan, int tenantCount) =>
         new(
             plan.Id,
             plan.Name,
@@ -233,7 +280,34 @@ public class PlatformService(
             plan.MaxUsers,
             plan.MaxBranches,
             plan.MaxDevicesPerUser,
+            plan.Price,
+            plan.BillingPeriodMonths,
+            plan.TierOrder,
             plan.AllowWebLogin,
             plan.AllowMobileLogin,
-            plan.IsActive);
+            plan.IsActive,
+            tenantCount);
+
+    private static ShopResponse MapShop(
+        Tenant tenant,
+        int userCount,
+        int branchCount,
+        SubscriptionPlan? planOverride = null)
+    {
+        var plan = planOverride ?? tenant.SubscriptionPlan;
+        return new ShopResponse(
+            tenant.Id,
+            tenant.Name,
+            tenant.Code,
+            tenant.IsActive,
+            plan.Name,
+            plan.Code,
+            plan.MaxUsers,
+            plan.MaxBranches,
+            plan.MaxDevicesPerUser,
+            branchCount,
+            userCount,
+            tenant.SubscriptionExpiresAt,
+            tenant.CreatedAt);
+    }
 }

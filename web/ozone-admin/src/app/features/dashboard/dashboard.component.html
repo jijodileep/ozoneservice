@@ -1,12 +1,34 @@
-<mat-card>
-  <mat-card-header>
-    <mat-card-title>Dashboard</mat-card-title>
-    <mat-card-subtitle>Web admin shell</mat-card-subtitle>
-  </mat-card-header>
-  <mat-card-content>
-    <p>Welcome, {{ auth.profile()?.displayName }}.</p>
-    <p>Roles: {{ auth.profile()?.roles?.join(', ') || '—' }}</p>
-    <p>Selected branch: {{ branch.selectedBranchId() || '—' }}</p>
-    <p class="hint">API calls include JWT and X-Branch-Id headers automatically.</p>
-  </mat-card-content>
-</mat-card>
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-label">Signed in as</div>
+      <div class="stat-value">{{ auth.profile()?.displayName }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-label">Role</div>
+      <div class="stat-value">{{ auth.profile()?.roles?.join(', ') || '—' }}</div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-label">Active branch</div>
+      <div class="stat-value text-truncate">{{ branch.selectedBranchId() ? 'Selected' : '—' }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="content-card">
+  <div class="card-header-custom">
+    <h2>Welcome back</h2>
+    <p>Your web admin dashboard for setup, reports, and billing.</p>
+  </div>
+  <div class="card-body-custom">
+    <p class="mb-2">Use the sidebar to navigate:</p>
+    <ul class="mb-0 text-muted">
+      <li><strong>Invoices</strong> — view and download PDF invoices</li>
+      <li><strong>Upgrade Plan</strong> — move to a higher subscription tier</li>
+    </ul>
+  </div>
+</div>

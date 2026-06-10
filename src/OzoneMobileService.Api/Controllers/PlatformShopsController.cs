@@ -55,6 +55,7 @@ public class PlatformShopsController(IPlatformService platformService) : Control
 
     [HttpPost("{id:guid}/assign-plan")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> AssignPlan(
         Guid id,

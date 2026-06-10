@@ -2,7 +2,7 @@
 
 **Wave:** 8 — SaaS platform  
 **Depends on:** [chunk-04](chunk-04-multi-tenancy.md)  
-**Status:** done (limits on user/branch create deferred to chunk 09)
+**Status:** done
 
 ## Goal
 
@@ -16,11 +16,11 @@ Subscription plans with **user and branch limits**; enforce on create operations
 - [x] `Tenant.SubscriptionPlanId`, `SubscriptionExpiresAt` (optional)
 - [x] CRUD API `/api/platform/plans` (super admin only; GET + POST)
 - [x] `POST /api/platform/shops/{id}/assign-plan`
-- [ ] **Enforce on create** (chunk 09 / 08):
-  - `POST /api/users` → reject if active users >= `MaxUsers`
-  - `POST /api/branches` → reject if branches >= `MaxBranches`
-- [ ] Return clear error: `403 Plan limit reached (max N users)`
-- [ ] Angular: plan list/create (deferred — API ready)
+- [x] `ISubscriptionLimitService` — ready for chunk 08/09 user & branch create
+- [x] Return clear error: `403 Plan limit reached (max N users)`
+- [x] Enforce on assign-plan when usage exceeds new plan limits
+- [x] Angular: plan list/create + shop usage vs limits
+- [ ] **Wire enforce on create** in chunk 08 (`POST /api/branches`) and chunk 09 (`POST /api/users`)
 
 ## Example seed plans
 

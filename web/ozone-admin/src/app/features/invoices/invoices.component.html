@@ -1,0 +1,54 @@
+<div class="content-card">
+  <div class="card-header-custom d-flex align-items-center justify-content-between flex-wrap gap-2">
+    <div>
+      <h2>Invoices</h2>
+      <p>View and download invoice PDFs for your shop.</p>
+    </div>
+  </div>
+
+  <div class="card-body-custom p-0">
+    @if (loading()) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+      </div>
+    } @else if (error()) {
+      <ngb-alert type="danger" class="m-3" (closed)="error.set(null)">{{ error() }}</ngb-alert>
+    } @else if (!invoices().length) {
+      <div class="empty-state">
+        <i class="bi bi-receipt d-block"></i>
+        <p class="mb-0">No invoices yet.</p>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-custom mb-0">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Total</th>
+              <th>Date</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (inv of invoices(); track inv.id) {
+              <tr>
+                <td class="fw-medium">{{ inv.invoiceNumber }}</td>
+                <td>{{ inv.customerName }}</td>
+                <td class="text-muted">{{ inv.customerPhone }}</td>
+                <td class="fw-semibold">₹{{ inv.totalAmount | number: '1.2-2' }}</td>
+                <td class="text-muted">{{ inv.issuedAt | date: 'mediumDate' }}</td>
+                <td class="text-end">
+                  <button class="btn btn-sm btn-outline-primary" type="button" ngbTooltip="Open PDF" (click)="viewPdf(inv)">
+                    <i class="bi bi-file-earmark-pdf me-1"></i>PDF
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

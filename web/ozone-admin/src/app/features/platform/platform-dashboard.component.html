@@ -1,53 +1,64 @@
-<mat-card>
-  <mat-card-header>
-    <mat-card-title>Platform — Shops</mat-card-title>
-    <mat-card-subtitle>Super admin console</mat-card-subtitle>
-  </mat-card-header>
+@if (flash()) {
+  <ngb-alert type="info" class="mb-3" (closed)="flash.set(null)">
+    <i class="bi bi-info-circle me-2"></i>{{ flash() }}
+  </ngb-alert>
+}
 
-  <mat-card-content>
+<div class="content-card">
+  <div class="card-header-custom">
+    <h2>Shops</h2>
+    <p>Monitor plan usage, expiry dates, and assign subscriptions.</p>
+  </div>
+
+  <div class="card-body-custom p-0">
     @if (loading()) {
-      <mat-spinner diameter="36"></mat-spinner>
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+      </div>
     } @else if (error()) {
-      <p class="error">{{ error() }}</p>
+      <div class="alert alert-danger m-3">{{ error() }}</div>
     } @else {
-      <table mat-table [dataSource]="shops()" class="shops-table">
-        <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef>Name</th>
-          <td mat-cell *matCellDef="let shop">{{ shop.name }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="code">
-          <th mat-header-cell *matHeaderCellDef>Code</th>
-          <td mat-cell *matCellDef="let shop">{{ shop.code }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="planName">
-          <th mat-header-cell *matHeaderCellDef>Plan</th>
-          <td mat-cell *matCellDef="let shop">{{ shop.planName }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="branchCount">
-          <th mat-header-cell *matHeaderCellDef>Branches</th>
-          <td mat-cell *matCellDef="let shop">{{ shop.branchCount }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="userCount">
-          <th mat-header-cell *matHeaderCellDef>Users</th>
-          <td mat-cell *matCellDef="let shop">{{ shop.userCount }}</td>
-        </ng-container>
-
-        <ng-container matColumnDef="isActive">
-          <th mat-header-cell *matHeaderCellDef>Status</th>
-          <td mat-cell *matCellDef="let shop">
-            <mat-chip [class.active]="shop.isActive" [class.inactive]="!shop.isActive">
-              {{ shop.isActive ? 'Active' : 'Suspended' }}
-            </mat-chip>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-      </table>
+      <div class="table-responsive">
+        <table class="table table-custom mb-0">
+          <thead>
+            <tr>
+              <th>Shop</th>
+              <th>Plan</th>
+              <th>Usage</th>
+              <th>Expires</th>
+              <th>Change plan</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (shop of shops(); track shop.id) {
+              <tr>
+                <td>
+                  <div class="fw-medium">{{ shop.name }}</div>
+                  <div class="small text-muted">{{ shop.code }}</div>
+                </td>
+                <td><span class="badge text-bg-light border">{{ shop.planName }}</span></td>
+                <td [class.over-limit]="isOverLimit(shop)">{{ usageLabel(shop) }}</td>
+                <td class="text-muted small">
+                  {{ shop.subscriptionExpiresAt ? (shop.subscriptionExpiresAt | date: 'mediumDate') : '—' }}
+                </td>
+                <td>
+                  <select class="form-select form-select-sm" style="min-width: 160px" [value]="planIdForShop(shop)" (change)="onAssignPlan(shop, $event)">
+                    @for (plan of plans(); track plan.id) {
+                      <option [value]="plan.id">{{ plan.name }}</option>
+                    }
+                  </select>
+                </td>
+                <td>
+                  <span class="badge badge-status" [class.text-bg-success]="shop.isActive" [class.text-bg-secondary]="!shop.isActive">
+                    {{ shop.isActive ? 'Active' : 'Suspended' }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     }
-  </mat-card-content>
-</mat-card>
+  </div>
+</div>

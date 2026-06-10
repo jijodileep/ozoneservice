@@ -19,4 +19,12 @@ public class SubscriptionPlan
     public bool AllowMobileLogin { get; set; } = true;
 
     public bool IsActive { get; set; } = true;
+
+    /// <summary>Price per billing period (INR).</summary>
+    public decimal Price { get; set; }
+
+    public int BillingPeriodMonths { get; set; } = 1;
+
+    /// <summary>Higher tier allows upgrade only to plans with greater tier order.</summary>
+    public int TierOrder { get; set; } = 1;
 }

@@ -7,6 +7,10 @@ public sealed record SubscriptionPlanResponse(
     int MaxUsers,
     int MaxBranches,
     int MaxDevicesPerUser,
+    decimal Price,
+    int BillingPeriodMonths,
+    int TierOrder,
     bool AllowWebLogin,
     bool AllowMobileLogin,
-    bool IsActive);
+    bool IsActive,
+    int TenantCount);

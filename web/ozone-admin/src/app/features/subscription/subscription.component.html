@@ -1,0 +1,50 @@
+<div class="content-card mb-4">
+  <div class="card-header-custom">
+    <h2>Current subscription</h2>
+    <p>
+      Plan: <strong>{{ currentPlanName() || '—' }}</strong>
+      @if (expiresAt()) {
+        · Renews / expires <strong>{{ expiresAt() | date: 'longDate' }}</strong>
+      }
+    </p>
+  </div>
+</div>
+
+@if (message()) {
+  <ngb-alert type="success" class="mb-3" (closed)="message.set(null)">
+    <i class="bi bi-check-circle me-2"></i>{{ message() }}
+  </ngb-alert>
+}
+@if (error()) {
+  <ngb-alert type="danger" class="mb-3" (closed)="error.set(null)">{{ error() }}</ngb-alert>
+}
+
+<h3 class="h6 text-muted text-uppercase fw-semibold mb-3" style="letter-spacing: 0.05em">Available upgrades</h3>
+
+<div class="row g-3">
+  @for (plan of upgradeOptions(); track plan.id) {
+    <div class="col-md-4">
+      <div class="plan-card card h-100">
+        <div class="card-body p-4">
+          <h4 class="h6 fw-semibold mb-3">{{ plan.name }}</h4>
+          <div class="plan-price">₹{{ plan.price | number: '1.0-0' }}</div>
+          <div class="plan-period mb-3">per {{ plan.billingPeriodMonths }} month(s)</div>
+          <ul class="list-unstyled small text-muted mb-4">
+            <li class="mb-1"><i class="bi bi-people me-2"></i>{{ plan.maxUsers }} users</li>
+            <li><i class="bi bi-geo-alt me-2"></i>{{ plan.maxBranches }} branches</li>
+          </ul>
+          <button class="btn btn-primary w-100" type="button" (click)="upgrade(plan)">
+            Upgrade to {{ plan.name }}
+          </button>
+        </div>
+      </div>
+    </div>
+  } @empty {
+    <div class="col-12">
+      <div class="empty-state content-card">
+        <i class="bi bi-trophy d-block"></i>
+        <p class="mb-0">You're on the highest available plan.</p>
+      </div>
+    </div>
+  }
+</div>

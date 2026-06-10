@@ -14,6 +14,7 @@ public class AuthService(
     UserManager<ApplicationUser> userManager,
     AppDbContext dbContext,
     JwtTokenService jwtTokenService,
+    INotificationService notificationService,
     IOptions<JwtSettings> jwtOptions) : IAuthService
 {
     private readonly JwtSettings _jwtSettings = jwtOptions.Value;
@@ -93,6 +94,7 @@ public class AuthService(
 
         dbContext.RefreshTokens.Add(refreshToken);
         await dbContext.SaveChangesAsync(cancellationToken);
+        await notificationService.CheckSubscriptionExpiryAsync(cancellationToken);
 
         return new TokenResponse(
             accessToken,

@@ -23,45 +23,119 @@ public static class DevelopmentDataSeeder
         await SeedSuperAdminAsync(userManager);
         await SeedDevTenantAdminAsync(db, userManager);
         await SeedDevShopUsersAsync(db, userManager);
+        await SeedDevInvoiceAsync(db);
+        await PatchDevTenantSubscriptionAsync(db);
     }
 
-    private static async Task SeedPlansAsync(AppDbContext db)
+    private static async Task PatchDevTenantSubscriptionAsync(AppDbContext db)
     {
-        if (await db.SubscriptionPlans.AnyAsync())
+        var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == SeedConstants.DevTenantId);
+        if (tenant is null || tenant.SubscriptionExpiresAt.HasValue)
         {
             return;
         }
 
-        db.SubscriptionPlans.AddRange(
-            new SubscriptionPlan
-            {
-                Id = SeedConstants.StarterPlanId,
-                Name = "Starter",
-                Code = "STARTER",
-                MaxUsers = 3,
-                MaxBranches = 1,
-                MaxDevicesPerUser = 1
-            },
-            new SubscriptionPlan
-            {
-                Id = SeedConstants.ProPlanId,
-                Name = "Pro",
-                Code = "PRO",
-                MaxUsers = 10,
-                MaxBranches = 3,
-                MaxDevicesPerUser = 1
-            },
-            new SubscriptionPlan
-            {
-                Id = SeedConstants.EnterprisePlanId,
-                Name = "Enterprise",
-                Code = "ENTERPRISE",
-                MaxUsers = 50,
-                MaxBranches = 20,
-                MaxDevicesPerUser = 2
-            });
+        var plan = await db.SubscriptionPlans.FirstAsync(p => p.Id == tenant.SubscriptionPlanId);
+        tenant.SubscriptionExpiresAt = DateTime.UtcNow.AddMonths(plan.BillingPeriodMonths);
+        await db.SaveChangesAsync();
+    }
+
+    private static async Task SeedDevInvoiceAsync(AppDbContext db)
+    {
+        if (await db.Invoices.AnyAsync(i => i.TenantId == SeedConstants.DevTenantId))
+        {
+            return;
+        }
+
+        db.Invoices.Add(new Invoice
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000020"),
+            TenantId = SeedConstants.DevTenantId,
+            BranchId = SeedConstants.DevBranchId,
+            InvoiceNumber = "INV-DEV-001",
+            CustomerName = "Sample Customer",
+            CustomerPhone = "9876543210",
+            SubTotal = 1500,
+            TaxAmount = 270,
+            TotalAmount = 1770,
+            IssuedAt = DateTime.UtcNow.AddDays(-2),
+            Status = "Issued",
+            CreatedAt = DateTime.UtcNow
+        });
 
         await db.SaveChangesAsync();
+    }
+
+    private static async Task SeedPlansAsync(AppDbContext db)
+    {
+        if (!await db.SubscriptionPlans.AnyAsync())
+        {
+            db.SubscriptionPlans.AddRange(
+                CreateStarterPlan(),
+                CreateProPlan(),
+                CreateEnterprisePlan());
+            await db.SaveChangesAsync();
+        }
+        else
+        {
+            await PatchPlanAsync(db, SeedConstants.StarterPlanId, CreateStarterPlan());
+            await PatchPlanAsync(db, SeedConstants.ProPlanId, CreateProPlan());
+            await PatchPlanAsync(db, SeedConstants.EnterprisePlanId, CreateEnterprisePlan());
+            await db.SaveChangesAsync();
+        }
+    }
+
+    private static SubscriptionPlan CreateStarterPlan() => new()
+    {
+        Id = SeedConstants.StarterPlanId,
+        Name = "Starter",
+        Code = "STARTER",
+        MaxUsers = 3,
+        MaxBranches = 1,
+        MaxDevicesPerUser = 1,
+        Price = 999,
+        BillingPeriodMonths = 1,
+        TierOrder = 1
+    };
+
+    private static SubscriptionPlan CreateProPlan() => new()
+    {
+        Id = SeedConstants.ProPlanId,
+        Name = "Pro",
+        Code = "PRO",
+        MaxUsers = 10,
+        MaxBranches = 3,
+        MaxDevicesPerUser = 1,
+        Price = 2999,
+        BillingPeriodMonths = 1,
+        TierOrder = 2
+    };
+
+    private static SubscriptionPlan CreateEnterprisePlan() => new()
+    {
+        Id = SeedConstants.EnterprisePlanId,
+        Name = "Enterprise",
+        Code = "ENTERPRISE",
+        MaxUsers = 50,
+        MaxBranches = 20,
+        MaxDevicesPerUser = 2,
+        Price = 9999,
+        BillingPeriodMonths = 12,
+        TierOrder = 3
+    };
+
+    private static async Task PatchPlanAsync(AppDbContext db, Guid id, SubscriptionPlan template)
+    {
+        var plan = await db.SubscriptionPlans.FirstOrDefaultAsync(p => p.Id == id);
+        if (plan is null)
+        {
+            db.SubscriptionPlans.Add(template);
+            return;
+        }
+
+        plan.Price = template.Price;
+        plan.BillingPeriodMonths = template.BillingPeriodMonths;
+        plan.TierOrder = template.TierOrder;
     }
 
     private static async Task SeedRolesAsync(RoleManager<IdentityRole<Guid>> roleManager)

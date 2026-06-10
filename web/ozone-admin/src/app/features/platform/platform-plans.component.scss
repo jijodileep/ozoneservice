@@ -1,0 +1,25 @@
+.plans-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+}
+
+.plans-table {
+  width: 100%;
+}
+
+.full-width {
+  width: 100%;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.error {
+  color: #c62828;
+}
+
+@media (max-width: 960px) {
+  .plans-layout {
+    grid-template-columns: 1fr;
+  }
+}

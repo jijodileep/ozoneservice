@@ -1,50 +1,87 @@
-<mat-sidenav-container class="shell-container">
-  <mat-sidenav mode="side" opened class="shell-sidenav">
-    <div class="brand">Ozone Admin</div>
-    <mat-nav-list>
+<div class="app-shell">
+  <aside class="app-sidebar">
+    <div class="app-sidebar-brand">
+      <p class="brand-title"><i class="bi bi-phone me-2"></i>Ozone</p>
+      <p class="brand-sub">
+        {{ auth.isPlatformAdmin() ? 'Platform Console' : 'Service Center Admin' }}
+      </p>
+    </div>
+
+    <nav class="app-sidebar-nav nav flex-column">
       @if (auth.isPlatformAdmin()) {
-        <a mat-list-item routerLink="/platform" routerLinkActive="active">
-          <mat-icon matListItemIcon>store</mat-icon>
-          <span matListItemTitle>Shops</span>
+        <a class="nav-link" routerLink="/platform" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+          <i class="bi bi-building"></i> Shops
+        </a>
+        <a class="nav-link" routerLink="/platform/plans" routerLinkActive="active">
+          <i class="bi bi-credit-card-2-front"></i> Plans
         </a>
       } @else {
-        <a mat-list-item routerLink="/dashboard" routerLinkActive="active">
-          <mat-icon matListItemIcon>dashboard</mat-icon>
-          <span matListItemTitle>Dashboard</span>
+        <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
+          <i class="bi bi-grid-1x2"></i> Dashboard
+        </a>
+        <a class="nav-link" routerLink="/invoices" routerLinkActive="active">
+          <i class="bi bi-receipt-cutoff"></i> Invoices
+        </a>
+        <a class="nav-link" routerLink="/subscription" routerLinkActive="active">
+          <i class="bi bi-arrow-up-circle"></i> Upgrade Plan
         </a>
       }
-    </mat-nav-list>
-  </mat-sidenav>
+    </nav>
+  </aside>
 
-  <mat-sidenav-content>
-    <mat-toolbar color="primary" class="shell-toolbar">
-      <span class="toolbar-title">
+  <div class="app-main">
+    <header class="app-topbar">
+      <h1 class="page-title">
         {{ auth.isPlatformAdmin() ? 'Platform Console' : 'Mobile Service Center' }}
-      </span>
-      <span class="spacer"></span>
+      </h1>
 
-      @if (branch.branches().length) {
-        <mat-form-field appearance="outline" class="branch-select" subscriptSizing="dynamic">
-          <mat-label>Branch</mat-label>
-          <mat-select
-            [value]="branch.selectedBranchId()"
-            (valueChange)="onBranchChange($event)"
+      <div class="topbar-actions">
+        @if (notificationItems().length) {
+          <div ngbDropdown class="d-inline-block" placement="bottom-end">
+            <button type="button" class="btn btn-light btn-sm position-relative border" ngbDropdownToggle>
+              <i class="bi bi-bell"></i>
+              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ notificationItems().length }}
+              </span>
+            </button>
+            <div ngbDropdownMenu class="shadow border-0 p-0" style="min-width: 340px; max-height: 360px; overflow-y: auto">
+              <h6 class="dropdown-header">Notifications</h6>
+              @for (n of notificationItems(); track n.id) {
+                <div class="dropdown-item-text px-3 py-2 border-bottom">
+                  <div class="fw-semibold small">{{ n.title }}</div>
+                  <div class="text-muted small">{{ n.message }}</div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        @if (!auth.isPlatformAdmin() && branch.branches().length) {
+          <select
+            class="form-select form-select-sm"
+            style="width: auto; min-width: 180px"
+            [value]="branch.selectedBranchId() ?? ''"
+            (change)="onBranchChange($event)"
           >
             @for (item of branch.branches(); track item.id) {
-              <mat-option [value]="item.id">{{ item.name }} ({{ item.code }})</mat-option>
+              <option [value]="item.id">{{ item.name }}</option>
             }
-          </mat-select>
-        </mat-form-field>
-      }
+          </select>
+        }
 
-      <span class="user-name">{{ auth.profile()?.displayName }}</span>
-      <button mat-icon-button type="button" aria-label="Logout" (click)="logout()">
-        <mat-icon>logout</mat-icon>
-      </button>
-    </mat-toolbar>
+        <div class="user-chip">
+          <span class="avatar">{{ userInitials() }}</span>
+          <span class="user-name d-none d-md-inline">{{ auth.profile()?.displayName }}</span>
+        </div>
 
-    <main class="shell-content">
+        <button class="btn btn-outline-secondary btn-sm" type="button" (click)="logout()" title="Sign out">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-content">
       <router-outlet />
     </main>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+  </div>
+</div>

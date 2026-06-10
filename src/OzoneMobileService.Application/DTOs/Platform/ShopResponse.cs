@@ -7,6 +7,10 @@ public sealed record ShopResponse(
     bool IsActive,
     string PlanName,
     string PlanCode,
+    int MaxUsers,
+    int MaxBranches,
+    int MaxDevicesPerUser,
     int BranchCount,
     int UserCount,
+    DateTime? SubscriptionExpiresAt,
     DateTime CreatedAt);

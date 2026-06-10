@@ -56,6 +56,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("WebAdmin");
+app.UseMiddleware<PlanLimitExceptionMiddleware>();
 app.UseAuthentication();
 app.UseMiddleware<TenantMiddleware>();
 app.UseMiddleware<BranchMiddleware>();

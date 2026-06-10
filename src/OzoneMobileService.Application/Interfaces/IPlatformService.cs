@@ -10,6 +10,13 @@ public interface IPlatformService
         CreateSubscriptionPlanRequest request,
         CancellationToken cancellationToken = default);
 
+    Task<SubscriptionPlanResponse?> UpdatePlanAsync(
+        Guid planId,
+        UpdateSubscriptionPlanRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> DeletePlanAsync(Guid planId, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<ShopResponse>> GetShopsAsync(CancellationToken cancellationToken = default);
 
     Task<ShopResponse?> CreateShopAsync(CreateShopRequest request, CancellationToken cancellationToken = default);

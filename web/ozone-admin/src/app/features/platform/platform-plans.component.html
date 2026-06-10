@@ -1,0 +1,175 @@
+@if (error()) {
+  <ngb-alert type="danger" class="mb-3" (closed)="error.set(null)">{{ error() }}</ngb-alert>
+}
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="content-card">
+      <div class="card-header-custom">
+        <h2>Subscription plans</h2>
+        <p>Manage pricing, limits, and billing periods.</p>
+      </div>
+      <div class="card-body-custom p-0">
+        @if (loading()) {
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-custom mb-0">
+              <thead>
+                <tr>
+                  <th>Plan</th>
+                  <th>Price</th>
+                  <th>Period</th>
+                  <th>Limits</th>
+                  <th>Shops</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (plan of plans(); track plan.id) {
+                  <tr>
+                    <td>
+                      <div class="fw-medium">{{ plan.name }}</div>
+                      <div class="small text-muted">{{ plan.code }} · Tier {{ plan.tierOrder }}</div>
+                    </td>
+                    <td class="fw-semibold">₹{{ plan.price | number: '1.0-0' }}</td>
+                    <td>{{ plan.billingPeriodMonths }} mo</td>
+                    <td class="small text-muted">{{ plan.maxUsers }} users · {{ plan.maxBranches }} branches</td>
+                    <td>
+                      <span class="badge" [class.text-bg-warning]="plan.tenantCount > 0" [class.text-bg-light]="plan.tenantCount === 0">
+                        {{ plan.tenantCount }}
+                      </span>
+                    </td>
+                    <td class="text-end text-nowrap">
+                      <button class="btn btn-sm btn-outline-primary me-1" type="button" (click)="openEdit(plan)">
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-danger"
+                        type="button"
+                        [disabled]="plan.tenantCount > 0"
+                        [ngbTooltip]="plan.tenantCount > 0 ? 'Plan is assigned to shops' : 'Delete plan'"
+                        (click)="deletePlan(plan)"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="content-card">
+      <div class="card-header-custom">
+        <h2>Create plan</h2>
+        <p>Add a new subscription tier.</p>
+      </div>
+      <div class="card-body-custom">
+        <form [formGroup]="createForm" (ngSubmit)="createPlan()">
+          <div class="form-section-title">Details</div>
+          <div class="mb-3">
+            <label class="form-label">Name</label>
+            <input class="form-control" formControlName="name" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Code</label>
+            <input class="form-control text-uppercase" formControlName="code" />
+          </div>
+
+          <div class="form-section-title">Pricing</div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label">Price (₹)</label>
+              <input class="form-control" type="number" formControlName="price" />
+            </div>
+            <div class="col-6">
+              <label class="form-label">Months</label>
+              <input class="form-control" type="number" formControlName="billingPeriodMonths" />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tier order</label>
+            <input class="form-control" type="number" formControlName="tierOrder" />
+          </div>
+
+          <div class="form-section-title">Limits</div>
+          <div class="row g-2 mb-4">
+            <div class="col-6">
+              <label class="form-label">Max users</label>
+              <input class="form-control" type="number" formControlName="maxUsers" />
+            </div>
+            <div class="col-6">
+              <label class="form-label">Max branches</label>
+              <input class="form-control" type="number" formControlName="maxBranches" />
+            </div>
+          </div>
+
+          <button class="btn btn-primary w-100" type="submit" [disabled]="saving()">
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-2"></span>
+            }
+            Create plan
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #editModal let-modal>
+  <div class="modal-header border-bottom">
+    <h5 class="modal-title fw-semibold">Edit plan</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body" [formGroup]="editForm">
+    <div class="mb-3">
+      <label class="form-label">Name</label>
+      <input class="form-control" formControlName="name" />
+    </div>
+    <div class="row g-2 mb-3">
+      <div class="col-6">
+        <label class="form-label">Price (₹)</label>
+        <input class="form-control" type="number" formControlName="price" />
+      </div>
+      <div class="col-6">
+        <label class="form-label">Period (mo)</label>
+        <input class="form-control" type="number" formControlName="billingPeriodMonths" />
+      </div>
+    </div>
+    <div class="row g-2 mb-3">
+      <div class="col-4">
+        <label class="form-label">Tier</label>
+        <input class="form-control" type="number" formControlName="tierOrder" />
+      </div>
+      <div class="col-4">
+        <label class="form-label">Users</label>
+        <input class="form-control" type="number" formControlName="maxUsers" />
+      </div>
+      <div class="col-4">
+        <label class="form-label">Branches</label>
+        <input class="form-control" type="number" formControlName="maxBranches" />
+      </div>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" formControlName="isActive" id="isActive" />
+      <label class="form-check-label" for="isActive">Plan is active</label>
+    </div>
+  </div>
+  <div class="modal-footer border-top">
+    <button type="button" class="btn btn-light" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="saveEdit(modal)">
+      @if (saving()) {
+        <span class="spinner-border spinner-border-sm me-2"></span>
+      }
+      Save changes
+    </button>
+  </div>
+</ng-template>

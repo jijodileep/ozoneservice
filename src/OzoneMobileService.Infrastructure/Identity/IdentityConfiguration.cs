@@ -78,7 +78,11 @@ public static class IdentityConfiguration
 
         services.AddScoped<JwtTokenService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<ISubscriptionLimitService, SubscriptionLimitService>();
         services.AddScoped<IPlatformService, PlatformService>();
+        services.AddScoped<ISubscriptionService, SubscriptionService>();
+        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IInvoiceService, InvoiceService>();
 
         return services;
     }
