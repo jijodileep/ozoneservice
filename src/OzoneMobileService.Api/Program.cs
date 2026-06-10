@@ -50,6 +50,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseMiddleware<TenantMiddleware>();
+app.UseMiddleware<BranchMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

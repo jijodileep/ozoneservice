@@ -65,6 +65,15 @@ public static class IdentityConfiguration
         {
             options.AddPolicy(AuthorizationPolicies.PlatformSuperAdmin, policy =>
                 policy.RequireRole(Roles.PlatformSuperAdmin));
+
+            options.AddPolicy(AuthorizationPolicies.SetupWrite, policy =>
+                policy.RequireRole(Roles.TenantAdmin, Roles.ShopAdmin));
+
+            options.AddPolicy(AuthorizationPolicies.OperationalWrite, policy =>
+                policy.RequireRole(Roles.ShopStaff, Roles.ShopAdmin));
+
+            options.AddPolicy(AuthorizationPolicies.ReportsRead, policy =>
+                policy.RequireRole(Roles.TenantAdmin, Roles.ShopAdmin, Roles.Accountant));
         });
 
         services.AddScoped<JwtTokenService>();

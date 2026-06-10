@@ -76,25 +76,7 @@ Expected: `{"status":"healthy","database":"connected","timestamp":"..."}`
 
 - Swagger UI: http://localhost:5055/swagger
 - Dev login: `POST /api/auth/login`
-
-```powershell
-$body = '{"email":"admin@localhost.dev","password":"Admin@123"}'
-Invoke-RestMethod -Uri http://localhost:5055/api/auth/login -Method Post -Body $body -ContentType "application/json"
-```
-
-| Dev user | Value |
-|----------|-------|
-| Email | `admin@localhost.dev` |
-| Password | `Admin@123` |
-| Role | `TenantAdmin` |
-
-**Super Admin (create shops):**
-
-| Field | Value |
-|-------|-------|
-| Email | `superadmin@localhost.dev` |
-| Password | `Super@123` |
-| Role | `PlatformSuperAdmin` |
+- **All dev usernames & passwords:** [`docs/dev-credentials.md`](docs/dev-credentials.md)
 
 Platform API (Bearer token required):
 
@@ -103,7 +85,7 @@ Platform API (Bearer token required):
 - `GET /api/platform/shops`
 - `PATCH /api/platform/shops/{id}/suspend`
 
-After each chunk: `.\scripts\push-chunk.ps1 -Chunk "NN" -Message "..."`
+At the start of each chunk: `.\scripts\start-chunk.ps1 -Chunk "NN" -Title "..."`
 
 ## Solution structure
 
@@ -175,19 +157,7 @@ Host=localhost;Port=5432;Database=ozone_mobile_service;Username=ozone;Password=o
 
 ## Default database credentials
 
-
-
-| Variable | Default |
-
-|----------|---------|
-
-| User | `ozone` |
-
-| Password | `ozone_dev_password` |
-
-| Database | `ozone_mobile_service` |
-
-| Port | `5432` |
+See [`docs/dev-credentials.md`](docs/dev-credentials.md#postgresql-docker).
 
 
 
@@ -195,7 +165,7 @@ Host=localhost;Port=5432;Database=ozone_mobile_service;Username=ozone;Password=o
 
 
 
-Implementation is split into small chunks under [`plans/`](plans/README.md). Chunks 01–03, 33–34 (super admin API) are complete; next is [chunk-05](plans/chunk-05-authorization.md).
+Implementation is split into small chunks under [`plans/`](plans/README.md). Chunks 01–05 and 33–34 are complete; next is [chunk-06](plans/chunk-06-angular-shell.md).
 
 ### EF Core migrations
 

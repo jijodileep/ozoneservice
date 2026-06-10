@@ -2,7 +2,7 @@
 
 **Wave:** 0 — Foundation  
 **Depends on:** [chunk-04](chunk-04-multi-tenancy.md)  
-**Status:** pending
+**Status:** done
 
 ## Goal
 
@@ -10,16 +10,16 @@ Role-based access, branch scoping, and enforce **mobile-only writes** for operat
 
 ## Tasks
 
-- [ ] Define roles: `PlatformSuperAdmin`, `TenantAdmin`, `ShopAdmin`, `ShopStaff`, `Accountant`
-- [ ] `PlatformSuperAdmin` bypasses tenant filter; accesses `/api/platform/*` only
-- [ ] Seed roles; assign to dev users
-- [ ] `IBranchContext` — selected branch from header claim or user default
-- [ ] Authorization policies:
+- [x] Define roles: `PlatformSuperAdmin`, `TenantAdmin`, `ShopAdmin`, `ShopStaff`, `Accountant`
+- [x] `PlatformSuperAdmin` bypasses tenant filter; accesses `/api/platform/*` only
+- [x] Seed roles; assign to dev users
+- [x] `IBranchContext` — selected branch from header claim or user default
+- [x] Authorization policies:
   - `SetupWrite` — TenantAdmin, ShopAdmin (web setup)
   - `OperationalWrite` — ShopStaff, ShopAdmin (mobile entries)
   - `ReportsRead` — TenantAdmin, ShopAdmin, Accountant
-- [ ] Document policy matrix in `Shared/AuthorizationPolicies.cs`
-- [ ] Sample protected endpoint to validate policies
+- [x] Document policy matrix in `Shared/AuthorizationPolicies.cs`
+- [x] Sample protected endpoint to validate policies
 
 ## Files to create/modify
 

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OzoneMobileService.Application.Interfaces;
+using OzoneMobileService.Infrastructure.Authorization;
 using OzoneMobileService.Infrastructure.Identity;
 using OzoneMobileService.Infrastructure.MultiTenancy;
 using OzoneMobileService.Infrastructure.Persistence;
@@ -19,6 +20,7 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<ITenantContext, TenantContext>();
+        services.AddScoped<IBranchContext, BranchContext>();
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));

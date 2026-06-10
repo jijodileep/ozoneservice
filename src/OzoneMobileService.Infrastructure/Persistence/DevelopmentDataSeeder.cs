@@ -22,6 +22,7 @@ public static class DevelopmentDataSeeder
         await SeedDevBranchAsync(db);
         await SeedSuperAdminAsync(userManager);
         await SeedDevTenantAdminAsync(db, userManager);
+        await SeedDevShopUsersAsync(db, userManager);
     }
 
     private static async Task SeedPlansAsync(AppDbContext db)
@@ -117,7 +118,7 @@ public static class DevelopmentDataSeeder
 
         db.Branches.Add(new Branch
         {
-            Id = Guid.Parse("00000000-0000-0000-0000-000000000010"),
+            Id = SeedConstants.DevBranchId,
             TenantId = SeedConstants.DevTenantId,
             Code = "MAIN",
             Name = "Main Branch",
@@ -182,6 +183,78 @@ public static class DevelopmentDataSeeder
         }
 
         await userManager.AddToRoleAsync(user, Roles.TenantAdmin);
+    }
+
+    private static async Task SeedDevShopUsersAsync(
+        AppDbContext db,
+        UserManager<ApplicationUser> userManager)
+    {
+        await SeedDevUserWithBranchAsync(
+            db, userManager,
+            SeedConstants.DevShopAdminEmail,
+            SeedConstants.DevShopAdminPassword,
+            SeedConstants.DevShopAdminDisplayName,
+            Roles.ShopAdmin);
+
+        await SeedDevUserWithBranchAsync(
+            db, userManager,
+            SeedConstants.DevStaffEmail,
+            SeedConstants.DevStaffPassword,
+            SeedConstants.DevStaffDisplayName,
+            Roles.ShopStaff);
+
+        await SeedDevUserWithBranchAsync(
+            db, userManager,
+            SeedConstants.DevAccountantEmail,
+            SeedConstants.DevAccountantPassword,
+            SeedConstants.DevAccountantDisplayName,
+            Roles.Accountant);
+    }
+
+    private static async Task SeedDevUserWithBranchAsync(
+        AppDbContext db,
+        UserManager<ApplicationUser> userManager,
+        string email,
+        string password,
+        string displayName,
+        string role)
+    {
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            user = new ApplicationUser
+            {
+                Id = Guid.NewGuid(),
+                UserName = email,
+                Email = email,
+                EmailConfirmed = true,
+                DisplayName = displayName,
+                TenantId = SeedConstants.DevTenantId
+            };
+
+            var result = await userManager.CreateAsync(user, password);
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException(
+                    $"Failed to seed {email}: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+            }
+
+            await userManager.AddToRoleAsync(user, role);
+        }
+
+        var hasBranch = await db.UserBranches
+            .AnyAsync(ub => ub.UserId == user.Id && ub.BranchId == SeedConstants.DevBranchId);
+
+        if (!hasBranch)
+        {
+            db.UserBranches.Add(new UserBranch
+            {
+                UserId = user.Id,
+                BranchId = SeedConstants.DevBranchId
+            });
+
+            await db.SaveChangesAsync();
+        }
     }
 
     public static async Task SeedDevelopmentDataAsync(this IHost app)
