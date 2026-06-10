@@ -1,14 +1,20 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using OzoneMobileService.Application.Interfaces;
 using OzoneMobileService.Domain.Common;
 using OzoneMobileService.Domain.Entities;
 
 namespace OzoneMobileService.Infrastructure.Persistence;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options)
+public class AppDbContext(
+    DbContextOptions<AppDbContext> options,
+    ITenantContext tenantContext)
     : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>(options)
 {
+    private Guid? CurrentTenantId => tenantContext.TenantId;
+
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<SubscriptionPlan> SubscriptionPlans => Set<SubscriptionPlan>();
     public DbSet<Tenant> Tenants => Set<Tenant>();
@@ -80,15 +86,35 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-        {
-            if (typeof(ITenantEntity).IsAssignableFrom(entityType.ClrType))
-            {
-                modelBuilder.Entity(entityType.ClrType)
-                    .HasIndex(nameof(ITenantEntity.TenantId));
-            }
-        }
+        ConfigureTenantQueryFilters(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+    }
+
+    private void ConfigureTenantQueryFilters(ModelBuilder modelBuilder)
+    {
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (!typeof(ITenantEntity).IsAssignableFrom(entityType.ClrType))
+            {
+                continue;
+            }
+
+            modelBuilder.Entity(entityType.ClrType)
+                .HasIndex(nameof(ITenantEntity.TenantId));
+
+            var method = typeof(AppDbContext)
+                .GetMethod(nameof(SetTenantQueryFilter), BindingFlags.Instance | BindingFlags.NonPublic)!
+                .MakeGenericMethod(entityType.ClrType);
+
+            method.Invoke(this, [modelBuilder]);
+        }
+    }
+
+    private void SetTenantQueryFilter<TEntity>(ModelBuilder modelBuilder)
+        where TEntity : class, ITenantEntity
+    {
+        modelBuilder.Entity<TEntity>()
+            .HasQueryFilter(entity => CurrentTenantId == null || entity.TenantId == CurrentTenantId);
     }
 }

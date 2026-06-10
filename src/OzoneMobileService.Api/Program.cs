@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using OzoneMobileService.Api.Middleware;
 using OzoneMobileService.Application;
 using OzoneMobileService.Infrastructure;
 using OzoneMobileService.Infrastructure.Persistence;
@@ -48,6 +49,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthentication();
+app.UseMiddleware<TenantMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

@@ -2,7 +2,7 @@
 
 **Wave:** 0 — Foundation  
 **Depends on:** [chunk-03](chunk-03-auth-api.md)  
-**Status:** pending
+**Status:** done
 
 ## Goal
 
@@ -10,13 +10,13 @@ Tenant entity, tenant resolution from JWT, and EF global query filter on `Tenant
 
 ## Tasks
 
-- [ ] Create `Tenant` entity: `Id`, `Name`, `Code`, `IsActive`, `SubscriptionPlanId`, `SubscriptionExpiresAt`
-- [ ] Add `TenantId` to `ApplicationUser`; migration
-- [ ] `ITenantContext` service (current tenant from JWT claim)
-- [ ] `TenantResolutionMiddleware` or claims transformation
-- [ ] EF global query filter: `entity.TenantId == _tenantContext.TenantId`
-- [ ] Include `tenant_id` claim in JWT on login
-- [ ] Seed one dev tenant linked to dev user
+- [x] Create `Tenant` entity: `Id`, `Name`, `Code`, `IsActive`, `SubscriptionPlanId`, `SubscriptionExpiresAt`
+- [x] Add `TenantId` to `ApplicationUser`; migration
+- [x] `ITenantContext` service (current tenant from JWT claim)
+- [x] `TenantResolutionMiddleware` or claims transformation
+- [x] EF global query filter: `entity.TenantId == _tenantContext.TenantId`
+- [x] Include `tenant_id` claim in JWT on login
+- [x] Seed one dev tenant linked to dev user
 
 ## Files to create/modify
 

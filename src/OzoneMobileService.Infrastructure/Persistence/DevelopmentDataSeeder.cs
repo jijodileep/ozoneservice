@@ -19,6 +19,7 @@ public static class DevelopmentDataSeeder
         await SeedPlansAsync(db);
         await SeedRolesAsync(roleManager);
         await SeedDevTenantAsync(db);
+        await SeedDevBranchAsync(db);
         await SeedSuperAdminAsync(userManager);
         await SeedDevTenantAdminAsync(db, userManager);
     }
@@ -101,6 +102,26 @@ public static class DevelopmentDataSeeder
             Code = "DEV",
             IsActive = true,
             SubscriptionPlanId = SeedConstants.StarterPlanId,
+            CreatedAt = DateTime.UtcNow
+        });
+
+        await db.SaveChangesAsync();
+    }
+
+    private static async Task SeedDevBranchAsync(AppDbContext db)
+    {
+        if (await db.Branches.AnyAsync(b => b.TenantId == SeedConstants.DevTenantId))
+        {
+            return;
+        }
+
+        db.Branches.Add(new Branch
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000010"),
+            TenantId = SeedConstants.DevTenantId,
+            Code = "MAIN",
+            Name = "Main Branch",
+            IsActive = true,
             CreatedAt = DateTime.UtcNow
         });
 

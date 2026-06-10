@@ -10,11 +10,13 @@ Small, focused plans to execute **one chunk at a time**. Complete each plan full
 2. Say **"execute chunk-01"** (or the chunk number) in Cursor to implement it.
 3. Verify **Done criteria** in that plan.
 4. Mark status `done` in this index, then move to the next chunk.
-5. **Auto-push to Git** after each chunk:
+5. **Git at chunk start** (not at the end). When you begin a chunk, run:
 
 ```powershell
-.\scripts\push-chunk.ps1 -Chunk "33" -Message "Chunk 33: Super Admin create shops"
+.\scripts\start-chunk.ps1 -Chunk "05" -Title "Authorization"
 ```
+
+This commits and pushes any completed work from the previous chunk, then marks the new chunk as current. Implementation for the new chunk stays uncommitted until you start the *next* chunk (or commit manually).
 
 ## Milestones
 
@@ -32,7 +34,7 @@ Small, focused plans to execute **one chunk at a time**. Complete each plan full
 | 01 | [chunk-01-foundation.md](chunk-01-foundation.md) | Foundation | — | done |
 | 02 | [chunk-02-ef-base.md](chunk-02-ef-base.md) | Foundation | 01 | done |
 | 03 | [chunk-03-auth-api.md](chunk-03-auth-api.md) | Foundation | 02 | done |
-| 04 | [chunk-04-multi-tenancy.md](chunk-04-multi-tenancy.md) | Foundation | 03 | partial |
+| 04 | [chunk-04-multi-tenancy.md](chunk-04-multi-tenancy.md) | Foundation | 03 | done |
 | 05 | [chunk-05-authorization.md](chunk-05-authorization.md) | Foundation | 04 | **next** |
 | 06 | [chunk-06-angular-shell.md](chunk-06-angular-shell.md) | Client shells | 05 | pending |
 | 07 | [chunk-07-flutter-shell.md](chunk-07-flutter-shell.md) | Client shells | 05 | pending |
