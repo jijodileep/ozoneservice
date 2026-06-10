@@ -1,0 +1,15 @@
+.env
+**/bin/
+**/obj/
+node_modules/
+.dart_tool/
+
+# .NET
+*.user
+*.suo
+.vs/
+launchSettings.local.json
+
+# IDE
+.idea/
+*.swp

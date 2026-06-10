@@ -1,0 +1,6 @@
+@OzoneMobileService.Api_HostAddress = http://localhost:5055
+
+GET {{OzoneMobileService.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

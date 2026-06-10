@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="OzoneMobileService.Api/OzoneMobileService.Api.csproj" />
+  <Project Path="OzoneMobileService.Application/OzoneMobileService.Application.csproj" />
+  <Project Path="OzoneMobileService.Domain/OzoneMobileService.Domain.csproj" />
+  <Project Path="OzoneMobileService.Infrastructure/OzoneMobileService.Infrastructure.csproj" />
+  <Project Path="OzoneMobileService.Shared/OzoneMobileService.Shared.csproj" />
+</Solution>
