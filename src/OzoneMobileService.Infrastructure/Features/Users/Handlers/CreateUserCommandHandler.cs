@@ -1,3 +1,5 @@
+using FluentValidation;
+using FluentValidation.Results;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using OzoneMobileService.Application.DTOs.Users;
@@ -54,7 +56,12 @@ internal sealed class CreateUserCommandHandler(
         var createResult = await userManager.CreateAsync(user, request.Password);
         if (!createResult.Succeeded)
         {
-            return null;
+            throw new ValidationException(
+                createResult.Errors.Select(e => new ValidationFailure(
+                    e.Code.StartsWith("Password", StringComparison.Ordinal)
+                        ? nameof(CreateUserCommand.Password)
+                        : nameof(CreateUserCommand.Email),
+                    e.Description)));
         }
 
         var roleResult = await userManager.AddToRoleAsync(user, request.Role);

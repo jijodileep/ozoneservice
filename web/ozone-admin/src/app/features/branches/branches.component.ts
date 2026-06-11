@@ -1,16 +1,47 @@
-import { Component, OnInit, TemplateRef, inject, signal, viewChild } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgbAlertModule, NgbModal, NgbModalRef, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { AuthService } from '../../core/auth/auth.service';
 import { BranchDetail, CreateBranchRequest, UpdateBranchRequest } from '../../core/branch/branch.models';
 import { BranchService } from '../../core/branch/branch.service';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
+import { DEFAULT_PAGE_SIZE, clampPage, paginateSlice } from '../../shared/pagination.util';
+import { TablePaginationComponent } from '../../shared/table-pagination.component';
+
+const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+
+function optionalPhoneValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const raw = (control.value ?? '').trim();
+    if (!raw) {
+      return null;
+    }
+
+    let digits = raw.replace(/\D/g, '');
+    if (digits.length === 12 && digits.startsWith('91')) {
+      digits = digits.slice(2);
+    }
+
+    return digits.length === 10 ? null : { phone: true };
+  };
+}
+
+function optionalGstValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const raw = (control.value ?? '').trim().toUpperCase().replace(/\s/g, '');
+    if (!raw) {
+      return null;
+    }
+
+    return GSTIN_PATTERN.test(raw) ? null : { gst: true };
+  };
+}
 
 @Component({
   selector: 'app-branches',
   standalone: true,
-  imports: [ReactiveFormsModule, NgbAlertModule, NgbTooltipModule],
+  imports: [ReactiveFormsModule, NgbAlertModule, NgbTooltipModule, TablePaginationComponent],
   templateUrl: './branches.component.html',
 })
 export class BranchesComponent implements OnInit {
@@ -25,21 +56,26 @@ export class BranchesComponent implements OnInit {
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   readonly branches = signal<BranchDetail[]>([]);
+  readonly page = signal(1);
+  readonly pageSize = signal(DEFAULT_PAGE_SIZE);
+  readonly totalCount = computed(() => this.branches().length);
+  readonly pagedBranches = computed(() =>
+    paginateSlice(this.branches(), this.page(), this.pageSize()));
   readonly editingBranch = signal<BranchDetail | null>(null);
 
   readonly createForm = this.fb.nonNullable.group({
     code: ['', [Validators.required, Validators.maxLength(50), Validators.pattern(/^[A-Za-z0-9_-]+$/)]],
     name: ['', [Validators.required, Validators.maxLength(200)]],
     address: ['', Validators.maxLength(500)],
-    phone: ['', Validators.maxLength(20)],
-    gstNumber: ['', Validators.maxLength(20)],
+    phone: ['', optionalPhoneValidator()],
+    gstNumber: ['', optionalGstValidator()],
   });
 
   readonly editForm = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(200)]],
     address: ['', Validators.maxLength(500)],
-    phone: ['', Validators.maxLength(20)],
-    gstNumber: ['', Validators.maxLength(20)],
+    phone: ['', optionalPhoneValidator()],
+    gstNumber: ['', optionalGstValidator()],
     isActive: [true],
   });
 
@@ -51,11 +87,20 @@ export class BranchesComponent implements OnInit {
     return this.auth.hasAnyRole(['TenantAdmin']);
   }
 
+  onPageChange(page: number): void {
+    this.page.set(page);
+  }
+
+  private syncPage(): void {
+    this.page.set(clampPage(this.page(), this.totalCount(), this.pageSize()));
+  }
+
   loadBranches(): void {
     this.loading.set(true);
     this.branchService.getBranches().subscribe({
       next: (branches) => {
         this.branches.set(branches);
+        this.syncPage();
         this.loading.set(false);
       },
       error: () => {
@@ -172,16 +217,27 @@ export class BranchesComponent implements OnInit {
       return 'Invalid value.';
     }
 
+    if (control.errors['phone']) {
+      return 'Enter a valid 10-digit phone number.';
+    }
+
+    if (control.errors['gst']) {
+      return 'Enter a valid 15-character GSTIN.';
+    }
+
     return 'Invalid value.';
   }
 
   private normalizeCreateForm(): void {
+    const phone = this.normalizePhoneInput(this.createForm.controls.phone.value);
+    const gstNumber = this.normalizeGstInput(this.createForm.controls.gstNumber.value);
+
     this.createForm.patchValue({
       code: this.createForm.controls.code.value.trim().toUpperCase(),
       name: this.createForm.controls.name.value.trim(),
       address: this.createForm.controls.address.value.trim(),
-      phone: this.createForm.controls.phone.value.trim(),
-      gstNumber: this.createForm.controls.gstNumber.value.trim(),
+      phone,
+      gstNumber,
     });
     this.createForm.updateValueAndValidity();
   }
@@ -190,10 +246,29 @@ export class BranchesComponent implements OnInit {
     this.editForm.patchValue({
       name: this.editForm.controls.name.value.trim(),
       address: this.editForm.controls.address.value.trim(),
-      phone: this.editForm.controls.phone.value.trim(),
-      gstNumber: this.editForm.controls.gstNumber.value.trim(),
+      phone: this.normalizePhoneInput(this.editForm.controls.phone.value),
+      gstNumber: this.normalizeGstInput(this.editForm.controls.gstNumber.value),
     });
     this.editForm.updateValueAndValidity();
+  }
+
+  private normalizePhoneInput(value: string): string {
+    const raw = value.trim();
+    if (!raw) {
+      return '';
+    }
+
+    let digits = raw.replace(/\D/g, '');
+    if (digits.length === 12 && digits.startsWith('91')) {
+      digits = digits.slice(2);
+    }
+
+    return digits.length === 10 ? digits : raw;
+  }
+
+  private normalizeGstInput(value: string): string {
+    const raw = value.trim();
+    return raw ? raw.toUpperCase().replace(/\s/g, '') : '';
   }
 
   private formatApiError(err: unknown, fallback: string): string {

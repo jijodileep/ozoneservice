@@ -1,5 +1,6 @@
 using FluentValidation;
 using OzoneMobileService.Application.Features.Branches.Commands;
+using OzoneMobileService.Shared;
 
 namespace OzoneMobileService.Application.Features.Branches.Commands;
 
@@ -18,14 +19,16 @@ public sealed class CreateBranchCommandValidator : AbstractValidator<CreateBranc
 
         RuleFor(x => x.Address)
             .MaximumLength(500)
-            .When(x => x.Address is not null);
+            .When(x => !string.IsNullOrWhiteSpace(x.Address));
 
         RuleFor(x => x.Phone)
-            .MaximumLength(20)
-            .When(x => x.Phone is not null);
+            .Must(p => PhoneNormalizer.TryNormalizeOptional(p, out _))
+            .When(x => !string.IsNullOrWhiteSpace(x.Phone))
+            .WithMessage("Enter a valid 10-digit phone number.");
 
         RuleFor(x => x.GstNumber)
-            .MaximumLength(20)
-            .When(x => x.GstNumber is not null);
+            .Must(g => GstinNormalizer.TryNormalizeOptional(g, out _))
+            .When(x => !string.IsNullOrWhiteSpace(x.GstNumber))
+            .WithMessage("Enter a valid 15-character GSTIN.");
     }
 }

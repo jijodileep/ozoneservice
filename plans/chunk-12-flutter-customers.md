@@ -2,7 +2,7 @@
 
 **Wave:** 3 — Customers  
 **Depends on:** [chunk-11](chunk-11-customer-api.md)  
-**Status:** pending
+**Status:** done
 
 ## Goal
 
@@ -10,11 +10,11 @@ Mobile screens for customer lookup, create, and add device.
 
 ## Tasks
 
-- [ ] Phone lookup screen (search on submit)
-- [ ] Create customer form if not found (name, optional email/address)
-- [ ] Device picker: brand → model → variant dropdown
-- [ ] Add device to customer (IMEI optional)
-- [ ] Show brief customer history if found
+- [x] Phone lookup screen (search on submit)
+- [x] Create customer form if not found (name, optional email/address)
+- [x] Device picker: brand → model → variant dropdown
+- [x] Add device to customer (IMEI optional)
+- [x] Show brief customer history if found
 
 ## Done criteria
 

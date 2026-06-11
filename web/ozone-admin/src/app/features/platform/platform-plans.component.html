@@ -28,7 +28,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (plan of plans(); track plan.id) {
+                @for (plan of pagedPlans(); track plan.id) {
                   <tr>
                     <td>
                       <div class="fw-medium">{{ plan.name }}</div>
@@ -71,6 +71,12 @@
               </tbody>
             </table>
           </div>
+          <app-table-pagination
+            [page]="page()"
+            [pageSize]="pageSize()"
+            [totalCount]="totalCount()"
+            (pageChange)="onPageChange($event)"
+          />
         }
       </div>
     </div>

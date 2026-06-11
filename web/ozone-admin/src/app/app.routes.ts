@@ -11,6 +11,8 @@ import { PlatformUpgradeRequestsComponent } from './features/platform/platform-u
 import { BranchesComponent } from './features/branches/branches.component';
 import { UsersComponent } from './features/users/users.component';
 import { MobileMastersComponent } from './features/mobile-masters/mobile-masters.component';
+import { PlatformMobileMastersComponent } from './features/platform/platform-mobile-masters.component';
+import { PlanDetailsComponent } from './features/plan/plan-details.component';
 import { SubscriptionComponent } from './features/subscription/subscription.component';
 import { ShellComponent } from './layout/shell.component';
 
@@ -28,8 +30,13 @@ export const routes: Routes = [
         component: DashboardComponent,
       },
       {
+        path: 'plan',
+        canActivate: [roleGuard(['TenantAdmin'])],
+        component: PlanDetailsComponent,
+      },
+      {
         path: 'invoices',
-        canActivate: [roleGuard(['TenantAdmin', 'ShopAdmin', 'Accountant'])],
+        canActivate: [roleGuard(['TenantAdmin'])],
         component: InvoicesComponent,
       },
       {
@@ -49,7 +56,7 @@ export const routes: Routes = [
       },
       {
         path: 'subscription',
-        canActivate: [roleGuard(['TenantAdmin', 'ShopAdmin'])],
+        canActivate: [roleGuard(['TenantAdmin'])],
         component: SubscriptionComponent,
       },
       {
@@ -71,6 +78,11 @@ export const routes: Routes = [
         path: 'platform/tax',
         canActivate: [roleGuard(['PlatformSuperAdmin'])],
         component: PlatformTaxComponent,
+      },
+      {
+        path: 'platform/mobile-masters',
+        canActivate: [roleGuard(['PlatformSuperAdmin'])],
+        component: PlatformMobileMastersComponent,
       },
     ],
   },

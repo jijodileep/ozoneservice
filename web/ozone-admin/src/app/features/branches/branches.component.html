@@ -26,7 +26,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (branch of branches(); track branch.id) {
+                @for (branch of pagedBranches(); track branch.id) {
                   <tr>
                     <td>
                       <div class="fw-medium">{{ branch.name }}</div>
@@ -78,6 +78,12 @@
               </tbody>
             </table>
           </div>
+          <app-table-pagination
+            [page]="page()"
+            [pageSize]="pageSize()"
+            [totalCount]="totalCount()"
+            (pageChange)="onPageChange($event)"
+          />
         }
       </div>
     </div>

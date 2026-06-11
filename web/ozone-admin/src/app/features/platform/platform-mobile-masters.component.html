@@ -1,0 +1,323 @@
+@if (error()) {
+  <ngb-alert type="danger" class="mb-3" (closed)="error.set(null)">{{ error() }}</ngb-alert>
+}
+
+<div class="content-card mb-4">
+  <div class="card-header-custom">
+    <h2>Mobile catalog</h2>
+    <p>
+      Global brand → model → variant hierarchy shared by all shops. Manage the full catalog here
+      (250+ brands supported with search and pagination).
+    </p>
+  </div>
+</div>
+
+<div class="content-card mb-4">
+  <div class="card-body-custom">
+    <div class="row g-3 align-items-end mb-3">
+      <div class="col-md-6">
+        <label class="form-label" for="brandSearch">Search brands</label>
+        <input
+          id="brandSearch"
+          class="form-control"
+          type="search"
+          placeholder="e.g. Samsung, Apple, Xiaomi…"
+          [ngModel]="search()"
+          (ngModelChange)="onSearchChange($event)"
+        />
+      </div>
+      <div class="col-md-6">
+        <form [formGroup]="brandForm" (ngSubmit)="createBrand()" class="d-flex gap-2 align-items-end">
+          <div class="flex-grow-1">
+            <label class="form-label" for="brandName">New brand</label>
+            <input
+              id="brandName"
+              class="form-control"
+              formControlName="name"
+              placeholder="Brand name"
+              [class.is-invalid]="isInvalid(brandForm, 'name')"
+            />
+            @if (fieldError(brandForm, 'name'); as message) {
+              <div class="invalid-feedback d-block">{{ message }}</div>
+            }
+          </div>
+          <button class="btn btn-primary" type="submit" [disabled]="saving()">Add brand</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="p-0">
+    @if (loading()) {
+      <div class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-custom table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Brand</th>
+              <th>Status</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (brand of brands(); track brand.id) {
+              <tr
+                role="button"
+                [class.table-active]="selectedBrand()?.id === brand.id"
+                (click)="selectBrand(brand)"
+              >
+                <td class="fw-medium">{{ brand.name }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.text-bg-success]="brand.isActive"
+                    [class.text-bg-secondary]="!brand.isActive"
+                  >
+                    {{ brand.isActive ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td class="text-end text-nowrap" (click)="$event.stopPropagation()">
+                  <button
+                    class="btn btn-sm btn-outline-primary btn-icon me-1"
+                    type="button"
+                    ngbTooltip="Edit"
+                    container="body"
+                    (click)="openEdit({ type: 'brand', item: brand })"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  @if (brand.isActive) {
+                    <button
+                      class="btn btn-sm btn-outline-danger btn-icon"
+                      type="button"
+                      ngbTooltip="Deactivate"
+                      container="body"
+                      (click)="deactivate({ type: 'brand', item: brand })"
+                    >
+                      <i class="bi bi-slash-circle"></i>
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="3" class="text-center text-muted py-4">No brands match your search.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-table-pagination
+        [page]="page()"
+        [pageSize]="pageSize()"
+        [totalCount]="totalCount()"
+        (pageChange)="onPageChange($event)"
+      />
+    }
+    </div>
+  </div>
+</div>
+
+@if (selectedBrand(); as brand) {
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="content-card h-100">
+        <div class="card-header-custom">
+          <h2>Models</h2>
+          <p>Models under {{ brand.name }}.</p>
+        </div>
+        <div class="card-body-custom">
+          <div class="table-responsive master-scroll mb-3">
+            <table class="table table-sm table-custom mb-0">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (model of models(); track model.id) {
+                  <tr
+                    role="button"
+                    [class.table-active]="selectedModel()?.id === model.id"
+                    (click)="selectModel(model)"
+                  >
+                    <td>
+                      {{ model.name }}
+                      @if (!model.isActive) {
+                        <span class="badge text-bg-secondary ms-1">Inactive</span>
+                      }
+                    </td>
+                    <td class="text-end text-nowrap" (click)="$event.stopPropagation()">
+                      <button
+                        class="btn btn-sm btn-outline-primary btn-icon me-1"
+                        type="button"
+                        ngbTooltip="Edit"
+                        container="body"
+                        (click)="openEdit({ type: 'model', item: model })"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      @if (model.isActive) {
+                        <button
+                          class="btn btn-sm btn-outline-danger btn-icon"
+                          type="button"
+                          ngbTooltip="Deactivate"
+                          container="body"
+                          (click)="deactivate({ type: 'model', item: model })"
+                        >
+                          <i class="bi bi-slash-circle"></i>
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="2" class="text-muted small">No models yet.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <form [formGroup]="modelForm" (ngSubmit)="createModel()">
+            <label class="form-label" for="modelName">New model</label>
+            <div class="input-group">
+              <input
+                id="modelName"
+                class="form-control"
+                formControlName="name"
+                placeholder="Galaxy S24"
+                [class.is-invalid]="isInvalid(modelForm, 'name')"
+              />
+              <button class="btn btn-primary" type="submit" [disabled]="saving()">Add</button>
+            </div>
+            @if (fieldError(modelForm, 'name'); as message) {
+              <div class="invalid-feedback d-block">{{ message }}</div>
+            }
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="content-card h-100">
+        <div class="card-header-custom">
+          <h2>Variants</h2>
+          <p>
+            @if (selectedModel(); as model) {
+              Variants for {{ model.name }}.
+            } @else {
+              Select a model to manage variants.
+            }
+          </p>
+        </div>
+        <div class="card-body-custom">
+          @if (!selectedModel()) {
+            <p class="text-muted small mb-0">Choose a model from the list.</p>
+          } @else {
+            <div class="table-responsive master-scroll mb-3">
+              <table class="table table-sm table-custom mb-0">
+                <thead>
+                  <tr>
+                    <th>Variant</th>
+                    <th class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (variant of variants(); track variant.id) {
+                    <tr>
+                      <td>
+                        {{ variant.name }}
+                        @if (!variant.isActive) {
+                          <span class="badge text-bg-secondary ms-1">Inactive</span>
+                        }
+                      </td>
+                      <td class="text-end text-nowrap">
+                        <button
+                          class="btn btn-sm btn-outline-primary btn-icon me-1"
+                          type="button"
+                          ngbTooltip="Edit"
+                          container="body"
+                          (click)="openEdit({ type: 'variant', item: variant })"
+                        >
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        @if (variant.isActive) {
+                          <button
+                            class="btn btn-sm btn-outline-danger btn-icon"
+                            type="button"
+                            ngbTooltip="Deactivate"
+                            container="body"
+                            (click)="deactivate({ type: 'variant', item: variant })"
+                          >
+                            <i class="bi bi-slash-circle"></i>
+                          </button>
+                        }
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="2" class="text-muted small">No variants yet.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <form [formGroup]="variantForm" (ngSubmit)="createVariant()">
+              <label class="form-label" for="variantName">New variant</label>
+              <div class="input-group">
+                <input
+                  id="variantName"
+                  class="form-control"
+                  formControlName="name"
+                  placeholder="256GB"
+                  [class.is-invalid]="isInvalid(variantForm, 'name')"
+                />
+                <button class="btn btn-primary" type="submit" [disabled]="saving()">Add</button>
+              </div>
+              @if (fieldError(variantForm, 'name'); as message) {
+                <div class="invalid-feedback d-block">{{ message }}</div>
+              }
+            </form>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<ng-template #editModal let-modal>
+  <div class="modal-header border-bottom">
+    <h5 class="modal-title fw-semibold text-capitalize">{{ editTitle() }}</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body" [formGroup]="editForm">
+    <div class="mb-3">
+      <label class="form-label" for="editName">Name</label>
+      <input
+        id="editName"
+        class="form-control"
+        formControlName="name"
+        [class.is-invalid]="isInvalid(editForm, 'name')"
+      />
+      @if (fieldError(editForm, 'name'); as message) {
+        <div class="invalid-feedback d-block">{{ message }}</div>
+      }
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" formControlName="isActive" id="editActive" />
+      <label class="form-check-label" for="editActive">Active</label>
+    </div>
+  </div>
+  <div class="modal-footer border-top">
+    <button type="button" class="btn btn-light" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="saveEdit(modal)">
+      @if (saving()) {
+        <span class="spinner-border spinner-border-sm me-2"></span>
+      }
+      Save
+    </button>
+  </div>
+</ng-template>

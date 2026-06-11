@@ -14,13 +14,11 @@ internal sealed class CreateMobileVariantCommandHandler(AppDbContext dbContext)
         CreateMobileVariantCommand request,
         CancellationToken cancellationToken)
     {
-        var model = await dbContext.MobileModels
+        var modelExists = await dbContext.MobileModels
             .AsNoTracking()
-            .FirstOrDefaultAsync(
-                m => m.Id == request.ModelId && m.TenantId == request.TenantId,
-                cancellationToken);
+            .AnyAsync(m => m.Id == request.ModelId, cancellationToken);
 
-        if (model is null)
+        if (!modelExists)
         {
             return null;
         }
@@ -37,11 +35,9 @@ internal sealed class CreateMobileVariantCommandHandler(AppDbContext dbContext)
         var variant = new MobileVariant
         {
             Id = Guid.NewGuid(),
-            TenantId = request.TenantId,
             ModelId = request.ModelId,
             Name = name,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
         };
 
         dbContext.MobileVariants.Add(variant);

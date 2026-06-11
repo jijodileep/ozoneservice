@@ -32,7 +32,6 @@ internal sealed class UpdateMobileModelCommandHandler(AppDbContext dbContext)
 
         model.Name = name;
         model.IsActive = request.IsActive;
-        model.UpdatedAt = DateTime.UtcNow;
         await dbContext.SaveChangesAsync(cancellationToken);
         return MobileMasterMapper.MapModel(model);
     }

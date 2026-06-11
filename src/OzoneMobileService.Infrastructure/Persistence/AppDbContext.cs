@@ -27,6 +27,8 @@ public class AppDbContext(
     public DbSet<MobileBrand> MobileBrands => Set<MobileBrand>();
     public DbSet<MobileModel> MobileModels => Set<MobileModel>();
     public DbSet<MobileVariant> MobileVariants => Set<MobileVariant>();
+    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<CustomerDevice> CustomerDevices => Set<CustomerDevice>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -164,7 +166,7 @@ public class AppDbContext(
         {
             entity.ToTable("mobile_brands");
             entity.HasKey(b => b.Id);
-            entity.HasIndex(b => new { b.TenantId, b.Name }).IsUnique();
+            entity.HasIndex(b => b.Name).IsUnique();
             entity.Property(b => b.Name).HasMaxLength(100).IsRequired();
         });
 
@@ -190,6 +192,36 @@ public class AppDbContext(
                 .WithMany(m => m.Variants)
                 .HasForeignKey(v => v.ModelId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Customer>(entity =>
+        {
+            entity.ToTable("customers");
+            entity.HasKey(c => c.Id);
+            entity.HasIndex(c => new { c.TenantId, c.MobileNumber }).IsUnique();
+            entity.Property(c => c.Name).HasMaxLength(200).IsRequired();
+            entity.Property(c => c.MobileNumber).HasMaxLength(10).IsRequired();
+            entity.Property(c => c.Email).HasMaxLength(256);
+            entity.Property(c => c.Address).HasMaxLength(500);
+        });
+
+        modelBuilder.Entity<CustomerDevice>(entity =>
+        {
+            entity.ToTable("customer_devices");
+            entity.HasKey(d => d.Id);
+            entity.Property(d => d.Imei).HasMaxLength(20);
+            entity.HasOne(d => d.Customer)
+                .WithMany(c => c.Devices)
+                .HasForeignKey(d => d.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(d => d.Variant)
+                .WithMany()
+                .HasForeignKey(d => d.VariantId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(d => d.RegisteredAtBranch)
+                .WithMany()
+                .HasForeignKey(d => d.RegisteredAtBranchId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         ConfigureTenantQueryFilters(modelBuilder);

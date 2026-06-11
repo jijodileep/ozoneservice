@@ -35,8 +35,8 @@ internal sealed class UpdateBranchCommandHandler(
 
         branch.Name = request.Name.Trim();
         branch.Address = BranchMapper.NormalizeOptional(request.Address);
-        branch.Phone = BranchMapper.NormalizeOptional(request.Phone);
-        branch.GstNumber = BranchMapper.NormalizeOptional(request.GstNumber);
+        branch.Phone = BranchMapper.NormalizePhone(request.Phone);
+        branch.GstNumber = BranchMapper.NormalizeGstNumber(request.GstNumber);
         branch.IsActive = request.IsActive;
 
         await dbContext.SaveChangesAsync(cancellationToken);

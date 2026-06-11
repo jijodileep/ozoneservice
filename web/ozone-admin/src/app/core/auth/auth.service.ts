@@ -89,6 +89,17 @@ export class AuthService {
     return this.hasAnyRole(['PlatformSuperAdmin']);
   }
 
+  isTenantAdmin(): boolean {
+    return this.hasAnyRole(['TenantAdmin']);
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${environment.apiUrl}/api/auth/change-password`, {
+      currentPassword,
+      newPassword,
+    });
+  }
+
   private decodeToken(token: string): JwtPayload | null {
     try {
       const payload = token.split('.')[1];

@@ -3,6 +3,17 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import {
+  CreateMobileBrandRequest,
+  CreateMobileModelRequest,
+  CreateMobileVariantRequest,
+  MobileBrand,
+  MobileModel,
+  MobileVariant,
+  UpdateMobileBrandRequest,
+  UpdateMobileModelRequest,
+  UpdateMobileVariantRequest,
+} from '../mobile-master/mobile-master.models';
 import { PagedResult, PaginationParams } from '../models/pagination.models';
 import {
   CreatePlanRequest,
@@ -82,6 +93,88 @@ export class PlatformService {
     return this.http.post<UpgradeRequestSummary>(
       `${environment.apiUrl}/api/platform/upgrade-requests/${id}/reject`,
       { reason },
+    );
+  }
+
+  getMobileBrandsPaged(params: PaginationParams): Observable<PagedResult<MobileBrand>> {
+    return this.http.get<PagedResult<MobileBrand>>(
+      `${environment.apiUrl}/api/platform/mobile-masters/brands`,
+      { params: this.toParams(params) },
+    );
+  }
+
+  createMobileBrand(request: CreateMobileBrandRequest): Observable<MobileBrand> {
+    return this.http.post<MobileBrand>(
+      `${environment.apiUrl}/api/platform/mobile-masters/brands`,
+      request,
+    );
+  }
+
+  updateMobileBrand(id: string, request: UpdateMobileBrandRequest): Observable<MobileBrand> {
+    return this.http.put<MobileBrand>(
+      `${environment.apiUrl}/api/platform/mobile-masters/brands/${id}`,
+      request,
+    );
+  }
+
+  deactivateMobileBrand(id: string): Observable<void> {
+    return this.http.delete<void>(
+      `${environment.apiUrl}/api/platform/mobile-masters/brands/${id}`,
+    );
+  }
+
+  getMobileModels(brandId: string): Observable<MobileModel[]> {
+    return this.http.get<MobileModel[]>(
+      `${environment.apiUrl}/api/platform/mobile-masters/brands/${brandId}/models`,
+    );
+  }
+
+  createMobileModel(brandId: string, request: CreateMobileModelRequest): Observable<MobileModel> {
+    return this.http.post<MobileModel>(
+      `${environment.apiUrl}/api/platform/mobile-masters/brands/${brandId}/models`,
+      request,
+    );
+  }
+
+  updateMobileModel(id: string, request: UpdateMobileModelRequest): Observable<MobileModel> {
+    return this.http.put<MobileModel>(
+      `${environment.apiUrl}/api/platform/mobile-masters/models/${id}`,
+      request,
+    );
+  }
+
+  deactivateMobileModel(id: string): Observable<void> {
+    return this.http.delete<void>(
+      `${environment.apiUrl}/api/platform/mobile-masters/models/${id}`,
+    );
+  }
+
+  getMobileVariants(modelId: string): Observable<MobileVariant[]> {
+    return this.http.get<MobileVariant[]>(
+      `${environment.apiUrl}/api/platform/mobile-masters/models/${modelId}/variants`,
+    );
+  }
+
+  createMobileVariant(
+    modelId: string,
+    request: CreateMobileVariantRequest,
+  ): Observable<MobileVariant> {
+    return this.http.post<MobileVariant>(
+      `${environment.apiUrl}/api/platform/mobile-masters/models/${modelId}/variants`,
+      request,
+    );
+  }
+
+  updateMobileVariant(id: string, request: UpdateMobileVariantRequest): Observable<MobileVariant> {
+    return this.http.put<MobileVariant>(
+      `${environment.apiUrl}/api/platform/mobile-masters/variants/${id}`,
+      request,
+    );
+  }
+
+  deactivateMobileVariant(id: string): Observable<void> {
+    return this.http.delete<void>(
+      `${environment.apiUrl}/api/platform/mobile-masters/variants/${id}`,
     );
   }
 

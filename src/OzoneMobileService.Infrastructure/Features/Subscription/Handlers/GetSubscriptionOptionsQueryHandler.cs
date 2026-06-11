@@ -64,6 +64,7 @@ internal sealed class GetSubscriptionOptionsQueryHandler(AppDbContext dbContext)
             tenant.SubscriptionPlan.Name,
             tenant.SubscriptionPlan.TierOrder,
             tenant.SubscriptionExpiresAt,
+            SubscriptionMapper.MapPlan(tenant.SubscriptionPlan),
             upgrades,
             pendingResponse);
     }

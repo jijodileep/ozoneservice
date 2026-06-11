@@ -27,7 +27,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (user of users(); track user.id) {
+                @for (user of pagedUsers(); track user.id) {
                   <tr>
                     <td>
                       <div class="fw-medium">{{ user.displayName }}</div>
@@ -77,6 +77,12 @@
               </tbody>
             </table>
           </div>
+          <app-table-pagination
+            [page]="page()"
+            [pageSize]="pageSize()"
+            [totalCount]="totalCount()"
+            (pageChange)="onPageChange($event)"
+          />
         }
       </div>
     </div>
@@ -128,6 +134,8 @@
               />
               @if (fieldError(createForm, 'password'); as message) {
                 <div class="invalid-feedback d-block">{{ message }}</div>
+              } @else {
+                <div class="form-text">{{ passwordRequirementsHint }}</div>
               }
             </div>
 

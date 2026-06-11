@@ -24,7 +24,7 @@ internal sealed class UpdateMobileBrandCommandHandler(AppDbContext dbContext)
         var name = MobileMasterMapper.NormalizeName(request.Name);
 
         if (await dbContext.MobileBrands.AnyAsync(
-                b => b.TenantId == brand.TenantId && b.Name == name && b.Id != brand.Id,
+                b => b.Name == name && b.Id != brand.Id,
                 cancellationToken))
         {
             return null;
@@ -32,7 +32,6 @@ internal sealed class UpdateMobileBrandCommandHandler(AppDbContext dbContext)
 
         brand.Name = name;
         brand.IsActive = request.IsActive;
-        brand.UpdatedAt = DateTime.UtcNow;
         await dbContext.SaveChangesAsync(cancellationToken);
         return MobileMasterMapper.MapBrand(brand);
     }

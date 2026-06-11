@@ -1,15 +1,17 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, OnInit, TemplateRef, inject, signal, viewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { NgbAlertModule, NgbModal, NgbModalRef, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 import { CreatePlanRequest, PlanSummary, UpdatePlanRequest } from '../../core/platform/platform.models';
 import { PlatformService } from '../../core/platform/platform.service';
 import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
+import { DEFAULT_PAGE_SIZE, clampPage, paginateSlice } from '../../shared/pagination.util';
+import { TablePaginationComponent } from '../../shared/table-pagination.component';
 
 @Component({
   selector: 'app-platform-plans',
   standalone: true,
-  imports: [ReactiveFormsModule, DecimalPipe, NgbAlertModule, NgbTooltipModule],
+  imports: [ReactiveFormsModule, DecimalPipe, NgbAlertModule, NgbTooltipModule, TablePaginationComponent],
   templateUrl: './platform-plans.component.html',
 })
 export class PlatformPlansComponent implements OnInit {
@@ -23,6 +25,11 @@ export class PlatformPlansComponent implements OnInit {
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   readonly plans = signal<PlanSummary[]>([]);
+  readonly page = signal(1);
+  readonly pageSize = signal(DEFAULT_PAGE_SIZE);
+  readonly totalCount = computed(() => this.plans().length);
+  readonly pagedPlans = computed(() =>
+    paginateSlice(this.plans(), this.page(), this.pageSize()));
   readonly editingPlan = signal<PlanSummary | null>(null);
 
   readonly createForm = this.fb.nonNullable.group({
@@ -55,11 +62,20 @@ export class PlatformPlansComponent implements OnInit {
     this.loadPlans();
   }
 
+  onPageChange(page: number): void {
+    this.page.set(page);
+  }
+
+  private syncPage(): void {
+    this.page.set(clampPage(this.page(), this.totalCount(), this.pageSize()));
+  }
+
   loadPlans(): void {
     this.loading.set(true);
     this.platform.getPlans().subscribe({
       next: (plans) => {
         this.plans.set(plans);
+        this.syncPage();
         this.loading.set(false);
       },
       error: () => {

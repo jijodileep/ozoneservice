@@ -40,8 +40,8 @@ internal sealed class CreateBranchCommandHandler(
             Code = code,
             Name = request.Name.Trim(),
             Address = BranchMapper.NormalizeOptional(request.Address),
-            Phone = BranchMapper.NormalizeOptional(request.Phone),
-            GstNumber = BranchMapper.NormalizeOptional(request.GstNumber),
+            Phone = BranchMapper.NormalizePhone(request.Phone),
+            GstNumber = BranchMapper.NormalizeGstNumber(request.GstNumber),
             IsActive = true
         };
 

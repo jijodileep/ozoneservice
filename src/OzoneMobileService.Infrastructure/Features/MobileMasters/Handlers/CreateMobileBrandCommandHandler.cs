@@ -16,9 +16,7 @@ internal sealed class CreateMobileBrandCommandHandler(AppDbContext dbContext)
     {
         var name = MobileMasterMapper.NormalizeName(request.Name);
 
-        if (await dbContext.MobileBrands.AnyAsync(
-                b => b.TenantId == request.TenantId && b.Name == name,
-                cancellationToken))
+        if (await dbContext.MobileBrands.AnyAsync(b => b.Name == name, cancellationToken))
         {
             return null;
         }
@@ -26,10 +24,8 @@ internal sealed class CreateMobileBrandCommandHandler(AppDbContext dbContext)
         var brand = new MobileBrand
         {
             Id = Guid.NewGuid(),
-            TenantId = request.TenantId,
             Name = name,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
         };
 
         dbContext.MobileBrands.Add(brand);

@@ -2,7 +2,6 @@ export interface MobileBrand {
   id: string;
   name: string;
   isActive: boolean;
-  tenantId: string;
 }
 
 export interface MobileModel {
@@ -10,7 +9,6 @@ export interface MobileModel {
   brandId: string;
   name: string;
   isActive: boolean;
-  tenantId: string;
 }
 
 export interface MobileVariant {
@@ -18,7 +16,6 @@ export interface MobileVariant {
   modelId: string;
   name: string;
   isActive: boolean;
-  tenantId: string;
 }
 
 export interface CreateMobileBrandRequest {

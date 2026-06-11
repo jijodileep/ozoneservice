@@ -48,4 +48,25 @@ public class AuthController(IMediator mediator) : AuthorizedApiControllerBase
         var profile = await mediator.Send(new GetUserProfileQuery(userId), cancellationToken);
         return profile is null ? NotFound() : Ok(profile);
     }
+
+    [HttpPost("change-password")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ChangePassword(
+        [FromBody] ChangePasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetUserId(out var userId))
+        {
+            return Unauthorized();
+        }
+
+        var changed = await mediator.Send(
+            new ChangePasswordCommand(userId, request.CurrentPassword, request.NewPassword),
+            cancellationToken);
+
+        return changed
+            ? NoContent()
+            : BadRequest(new { message = "Current password is incorrect or the new password is invalid." });
+    }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef, inject, signal, viewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgbAlertModule, NgbModal, NgbModalRef, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
@@ -13,11 +13,17 @@ import {
   UserDetail,
 } from '../../core/user/user.models';
 import { UserService } from '../../core/user/user.service';
+import {
+  PASSWORD_REQUIREMENTS_HINT,
+  passwordStrengthValidator,
+} from '../../core/validators/password.validators';
+import { DEFAULT_PAGE_SIZE, clampPage, paginateSlice } from '../../shared/pagination.util';
+import { TablePaginationComponent } from '../../shared/table-pagination.component';
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [ReactiveFormsModule, NgbAlertModule, NgbTooltipModule],
+  imports: [ReactiveFormsModule, NgbAlertModule, NgbTooltipModule, TablePaginationComponent],
   templateUrl: './users.component.html',
 })
 export class UsersComponent implements OnInit {
@@ -31,10 +37,16 @@ export class UsersComponent implements OnInit {
   readonly resetModalTpl = viewChild.required<TemplateRef<unknown>>('resetModal');
 
   readonly assignableRoles = ASSIGNABLE_ROLES;
+  readonly passwordRequirementsHint = PASSWORD_REQUIREMENTS_HINT;
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   readonly users = signal<UserDetail[]>([]);
+  readonly page = signal(1);
+  readonly pageSize = signal(DEFAULT_PAGE_SIZE);
+  readonly totalCount = computed(() => this.users().length);
+  readonly pagedUsers = computed(() =>
+    paginateSlice(this.users(), this.page(), this.pageSize()));
   readonly branches = signal<BranchDetail[]>([]);
   readonly editingUser = signal<UserDetail | null>(null);
   readonly resettingUser = signal<UserDetail | null>(null);
@@ -42,20 +54,20 @@ export class UsersComponent implements OnInit {
   readonly createForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email, Validators.maxLength(256)]],
     displayName: ['', [Validators.required, Validators.maxLength(200)]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
+    password: ['', [Validators.required, passwordStrengthValidator()]],
     role: ['ShopStaff', Validators.required],
-    branchIds: this.fb.nonNullable.control<string[]>([], Validators.required),
+    branchIds: this.fb.nonNullable.control<string[]>([], [Validators.required, Validators.minLength(1)]),
   });
 
   readonly editForm = this.fb.nonNullable.group({
     displayName: ['', [Validators.required, Validators.maxLength(200)]],
     role: ['ShopStaff', Validators.required],
-    branchIds: this.fb.nonNullable.control<string[]>([], Validators.required),
+    branchIds: this.fb.nonNullable.control<string[]>([], [Validators.required, Validators.minLength(1)]),
     isActive: [true],
   });
 
   readonly resetForm = this.fb.nonNullable.group({
-    newPassword: ['', [Validators.required, Validators.minLength(8)]],
+    newPassword: ['', [Validators.required, passwordStrengthValidator()]],
   });
 
   ngOnInit(): void {
@@ -77,11 +89,20 @@ export class UsersComponent implements OnInit {
     return this.assignableRoles.find((r) => r.value === role)?.label ?? role;
   }
 
+  onPageChange(page: number): void {
+    this.page.set(page);
+  }
+
+  private syncPage(): void {
+    this.page.set(clampPage(this.page(), this.totalCount(), this.pageSize()));
+  }
+
   loadUsers(): void {
     this.loading.set(true);
     this.userService.getUsers().subscribe({
       next: (users) => {
         this.users.set(users);
+        this.syncPage();
         this.loading.set(false);
       },
       error: () => {
@@ -255,12 +276,16 @@ export class UsersComponent implements OnInit {
       return null;
     }
 
-    if (control.errors['required']) {
+    if (control.errors['required'] || control.errors['minlength']) {
       return controlName === 'branchIds' ? 'Select at least one branch.' : 'This field is required.';
     }
 
     if (control.errors['email']) {
       return 'Enter a valid email address.';
+    }
+
+    if (control.errors['passwordStrength']) {
+      return PASSWORD_REQUIREMENTS_HINT;
     }
 
     if (control.errors['minlength']) {

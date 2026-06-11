@@ -3,5 +3,4 @@ namespace OzoneMobileService.Application.DTOs.MobileMasters;
 public sealed record MobileBrandResponse(
     Guid Id,
     string Name,
-    bool IsActive,
-    Guid TenantId);
+    bool IsActive);

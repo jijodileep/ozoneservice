@@ -19,7 +19,6 @@ internal sealed class DeactivateMobileVariantCommandHandler(AppDbContext dbConte
         }
 
         variant.IsActive = false;
-        variant.UpdatedAt = DateTime.UtcNow;
         await dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }

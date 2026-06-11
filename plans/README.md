@@ -41,9 +41,9 @@ This commits and pushes any completed work from the previous chunk, then marks t
 | 08 | [chunk-08-branches.md](chunk-08-branches.md) | Setup | 06 | done |
 | 09 | [chunk-09-users.md](chunk-09-users.md) | Setup | 08 | done |
 | 10 | [chunk-10-mobile-masters.md](chunk-10-mobile-masters.md) | Setup | 08 | done |
-| 11 | [chunk-11-customer-api.md](chunk-11-customer-api.md) | Customers | 07, 10 | **next** |
-| 12 | [chunk-12-flutter-customers.md](chunk-12-flutter-customers.md) | Customers | 11 | pending |
-| 13 | [chunk-13-job-api-basics.md](chunk-13-job-api-basics.md) | Jobs | 12 | pending |
+| 11 | [chunk-11-customer-api.md](chunk-11-customer-api.md) | Customers | 07, 10 | done |
+| 12 | [chunk-12-flutter-customers.md](chunk-12-flutter-customers.md) | Customers | 11 | done |
+| 13 | [chunk-13-job-api-basics.md](chunk-13-job-api-basics.md) | Jobs | 12 | **next** |
 | 14 | [chunk-14-flutter-jobs-list.md](chunk-14-flutter-jobs-list.md) | Jobs | 13 | pending |
 | 15 | [chunk-15-job-status-api.md](chunk-15-job-status-api.md) | Jobs | 14 | pending |
 | 16 | [chunk-16-flutter-job-detail.md](chunk-16-flutter-job-detail.md) | Jobs | 15 | pending |

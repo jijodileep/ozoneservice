@@ -9,6 +9,7 @@ export interface SubscriptionOptions {
   currentPlanName: string;
   currentTierOrder: number;
   subscriptionExpiresAt: string | null;
+  currentPlan: PlanSummary;
   upgradeOptions: PlanSummary[];
   pendingRequest: UpgradeRequestSummary | null;
 }

@@ -19,7 +19,6 @@ internal sealed class DeactivateMobileModelCommandHandler(AppDbContext dbContext
         }
 
         model.IsActive = false;
-        model.UpdatedAt = DateTime.UtcNow;
         await dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }

@@ -32,7 +32,6 @@ internal sealed class UpdateMobileVariantCommandHandler(AppDbContext dbContext)
 
         variant.Name = name;
         variant.IsActive = request.IsActive;
-        variant.UpdatedAt = DateTime.UtcNow;
         await dbContext.SaveChangesAsync(cancellationToken);
         return MobileMasterMapper.MapVariant(variant);
     }

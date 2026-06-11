@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../core/auth/auth_controller.dart';
 import '../features/account/account_screen.dart';
+import '../features/customers/add_device_screen.dart';
+import '../features/customers/create_customer_screen.dart';
+import '../features/customers/customer_detail_screen.dart';
 import '../features/customers/customers_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/jobs/jobs_screen.dart';
@@ -64,6 +67,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/customers',
             builder: (context, state) => const CustomersScreen(),
+            routes: [
+              GoRoute(
+                path: 'new',
+                builder: (context, state) => CreateCustomerScreen(
+                  phone: state.uri.queryParameters['phone'] ?? '',
+                ),
+              ),
+              GoRoute(
+                path: ':id',
+                builder: (context, state) => CustomerDetailScreen(
+                  customerId: state.pathParameters['id']!,
+                ),
+                routes: [
+                  GoRoute(
+                    path: 'add-device',
+                    builder: (context, state) => AddDeviceScreen(
+                      customerId: state.pathParameters['id']!,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
           GoRoute(
             path: '/account',

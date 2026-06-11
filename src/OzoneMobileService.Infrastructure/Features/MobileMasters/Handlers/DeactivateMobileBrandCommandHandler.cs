@@ -19,7 +19,6 @@ internal sealed class DeactivateMobileBrandCommandHandler(AppDbContext dbContext
         }
 
         brand.IsActive = false;
-        brand.UpdatedAt = DateTime.UtcNow;
         await dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }

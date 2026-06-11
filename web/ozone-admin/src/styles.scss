@@ -278,6 +278,12 @@ body {
   }
 }
 
+// —— Mobile catalog scroll panels ——
+.master-scroll {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
 // —— Plan cards ——
 .plan-card {
   border: 1px solid var(--oz-border);

@@ -14,13 +14,11 @@ internal sealed class CreateMobileModelCommandHandler(AppDbContext dbContext)
         CreateMobileModelCommand request,
         CancellationToken cancellationToken)
     {
-        var brand = await dbContext.MobileBrands
+        var brandExists = await dbContext.MobileBrands
             .AsNoTracking()
-            .FirstOrDefaultAsync(
-                b => b.Id == request.BrandId && b.TenantId == request.TenantId,
-                cancellationToken);
+            .AnyAsync(b => b.Id == request.BrandId, cancellationToken);
 
-        if (brand is null)
+        if (!brandExists)
         {
             return null;
         }
@@ -37,11 +35,9 @@ internal sealed class CreateMobileModelCommandHandler(AppDbContext dbContext)
         var model = new MobileModel
         {
             Id = Guid.NewGuid(),
-            TenantId = request.TenantId,
             BrandId = request.BrandId,
             Name = name,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
         };
 
         dbContext.MobileModels.Add(model);

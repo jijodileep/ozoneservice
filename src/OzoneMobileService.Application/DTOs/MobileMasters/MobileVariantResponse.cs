@@ -4,5 +4,4 @@ public sealed record MobileVariantResponse(
     Guid Id,
     Guid ModelId,
     string Name,
-    bool IsActive,
-    Guid TenantId);
+    bool IsActive);

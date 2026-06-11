@@ -24,8 +24,50 @@ public static class DevelopmentDataSeeder
         await SeedDevTenantAdminAsync(db, userManager);
         await SeedDevShopUsersAsync(db, userManager);
         await SeedTaxConfigurationAsync(db);
+        await SeedMobileMastersAsync(db);
         await SeedDevInvoiceAsync(db);
         await PatchDevTenantSubscriptionAsync(db);
+    }
+
+    private static async Task SeedMobileMastersAsync(AppDbContext db)
+    {
+        if (await db.MobileBrands.AnyAsync())
+        {
+            return;
+        }
+
+        foreach (var name in MobileMasterSeedData.BrandNames)
+        {
+            db.MobileBrands.Add(new MobileBrand
+            {
+                Id = Guid.NewGuid(),
+                Name = name,
+                IsActive = true,
+            });
+        }
+
+        await db.SaveChangesAsync();
+
+        var samsung = await db.MobileBrands.FirstAsync(b => b.Name == "Samsung");
+        var galaxy = new MobileModel
+        {
+            Id = Guid.NewGuid(),
+            BrandId = samsung.Id,
+            Name = "Galaxy S24",
+            IsActive = true,
+        };
+        db.MobileModels.Add(galaxy);
+        await db.SaveChangesAsync();
+
+        db.MobileVariants.Add(new MobileVariant
+        {
+            Id = Guid.NewGuid(),
+            ModelId = galaxy.Id,
+            Name = "256GB",
+            IsActive = true,
+        });
+
+        await db.SaveChangesAsync();
     }
 
     private static async Task PatchDevTenantSubscriptionAsync(AppDbContext db)

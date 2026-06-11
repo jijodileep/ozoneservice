@@ -21,6 +21,9 @@
         <a class="nav-link" routerLink="/platform/tax" routerLinkActive="active">
           <i class="bi bi-percent" aria-hidden="true"></i><span>Tax Master</span>
         </a>
+        <a class="nav-link" routerLink="/platform/mobile-masters" routerLinkActive="active">
+          <i class="bi bi-phone" aria-hidden="true"></i><span>Mobile Catalog</span>
+        </a>
       } @else {
         <a class="nav-link" routerLink="/dashboard" routerLinkActive="active">
           <i class="bi bi-grid-1x2" aria-hidden="true"></i><span>Dashboard</span>
@@ -36,12 +39,17 @@
         <a class="nav-link" routerLink="/mobile-masters" routerLinkActive="active">
           <i class="bi bi-phone" aria-hidden="true"></i><span>Mobile Masters</span>
         </a>
-        <a class="nav-link" routerLink="/invoices" routerLinkActive="active">
-          <i class="bi bi-receipt-cutoff" aria-hidden="true"></i><span>Invoices</span>
-        </a>
-        <a class="nav-link" routerLink="/subscription" routerLinkActive="active">
-          <i class="bi bi-arrow-up-circle" aria-hidden="true"></i><span>Request Upgrade</span>
-        </a>
+        @if (auth.isTenantAdmin()) {
+          <a class="nav-link" routerLink="/plan" routerLinkActive="active">
+            <i class="bi bi-card-checklist" aria-hidden="true"></i><span>Plan details</span>
+          </a>
+          <a class="nav-link" routerLink="/subscription" routerLinkActive="active">
+            <i class="bi bi-arrow-up-circle" aria-hidden="true"></i><span>Request upgrade</span>
+          </a>
+          <a class="nav-link" routerLink="/invoices" routerLinkActive="active">
+            <i class="bi bi-receipt-cutoff" aria-hidden="true"></i><span>Invoices</span>
+          </a>
+        }
       }
     </nav>
   </aside>
@@ -97,14 +105,31 @@
           </select>
         }
 
-        <div class="user-chip">
-          <span class="avatar">{{ userInitials() }}</span>
-          <span class="user-name d-none d-md-inline">{{ auth.profile()?.displayName }}</span>
+        <div ngbDropdown class="user-menu" placement="bottom-end">
+          <button
+            type="button"
+            class="btn user-menu-toggle"
+            ngbDropdownToggle
+            aria-label="Account menu"
+          >
+            <span class="avatar">{{ userInitials() }}</span>
+            <span class="user-name d-none d-md-inline">{{ auth.profile()?.displayName }}</span>
+            <i class="bi bi-chevron-down ms-1 d-none d-md-inline" aria-hidden="true"></i>
+          </button>
+          <div ngbDropdownMenu class="user-menu-panel">
+            <div class="dropdown-header">
+              <div class="fw-semibold">{{ auth.profile()?.displayName }}</div>
+              <div class="small text-muted">{{ auth.profile()?.email }}</div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <button type="button" ngbDropdownItem (click)="openChangePassword()">
+              <i class="bi bi-key me-2" aria-hidden="true"></i>Change password
+            </button>
+            <button type="button" ngbDropdownItem class="text-danger" (click)="logout()">
+              <i class="bi bi-box-arrow-right me-2" aria-hidden="true"></i>Sign out
+            </button>
+          </div>
         </div>
-
-        <button class="btn btn-outline-secondary btn-sm btn-logout" type="button" (click)="logout()" title="Sign out">
-          <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
-        </button>
       </div>
     </header>
 

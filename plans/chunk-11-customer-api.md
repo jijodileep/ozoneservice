@@ -2,7 +2,7 @@
 
 **Wave:** 3 — Customers  
 **Depends on:** [chunk-07](chunk-07-flutter-shell.md), [chunk-10](chunk-10-mobile-masters.md)  
-**Status:** pending
+**Status:** done
 
 ## Goal
 
@@ -10,12 +10,12 @@ Shared customer by mobile number; lookup and create endpoints.
 
 ## Tasks
 
-- [ ] `Customer` entity + `CustomerDevice`
-- [ ] `UNIQUE (TenantId, MobileNumber)` constraint
-- [ ] `PhoneNormalizer` utility (+91 / spaces)
-- [ ] `GET /api/customers/lookup?mobile=...`
-- [ ] `POST /api/customers` (mobile roles only)
-- [ ] `GET /api/customers/{id}` with devices + history stub
+- [x] `Customer` entity + `CustomerDevice`
+- [x] `UNIQUE (TenantId, MobileNumber)` constraint
+- [x] `PhoneNormalizer` utility (+91 / spaces)
+- [x] `GET /api/customers/lookup?mobile=...`
+- [x] `POST /api/customers` (mobile roles only)
+- [x] `GET /api/customers/{id}` with devices + history stub
 
 ## Business rules
 

@@ -1,9 +1,9 @@
-using OzoneMobileService.Domain.Common;
-
 namespace OzoneMobileService.Domain.Entities;
 
-public class MobileVariant : BaseEntity
+public class MobileVariant
 {
+    public Guid Id { get; set; }
+
     public Guid ModelId { get; set; }
 
     public MobileModel Model { get; set; } = null!;
