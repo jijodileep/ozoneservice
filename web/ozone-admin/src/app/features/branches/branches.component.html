@@ -1,0 +1,252 @@
+@if (error()) {
+  <ngb-alert type="danger" class="mb-3" (closed)="error.set(null)">{{ error() }}</ngb-alert>
+}
+
+<div class="row g-4">
+  <div [class]="isTenantAdmin() ? 'col-lg-8' : 'col-12'">
+    <div class="content-card">
+      <div class="card-header-custom">
+        <h2>Branches</h2>
+        <p>Manage service center locations for your shop.</p>
+      </div>
+      <div class="card-body-custom p-0">
+        @if (loading()) {
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-custom mb-0">
+              <thead>
+                <tr>
+                  <th>Branch</th>
+                  <th>Contact</th>
+                  <th>Status</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (branch of branches(); track branch.id) {
+                  <tr>
+                    <td>
+                      <div class="fw-medium">{{ branch.name }}</div>
+                      <div class="small text-muted">{{ branch.code }}</div>
+                      @if (branch.address) {
+                        <div class="small text-muted">{{ branch.address }}</div>
+                      }
+                    </td>
+                    <td class="small text-muted">
+                      @if (branch.phone) {
+                        <div>{{ branch.phone }}</div>
+                      }
+                      @if (branch.gstNumber) {
+                        <div>GST: {{ branch.gstNumber }}</div>
+                      }
+                      @if (!branch.phone && !branch.gstNumber) {
+                        <span>—</span>
+                      }
+                    </td>
+                    <td>
+                      <span class="badge" [class.text-bg-success]="branch.isActive" [class.text-bg-secondary]="!branch.isActive">
+                        {{ branch.isActive ? 'Active' : 'Inactive' }}
+                      </span>
+                    </td>
+                    <td class="text-end text-nowrap">
+                      <button
+                        class="btn btn-sm btn-outline-primary btn-icon me-1"
+                        type="button"
+                        ngbTooltip="Edit branch"
+                        container="body"
+                        (click)="openEdit(branch)"
+                      >
+                        <i class="bi bi-pencil"></i>
+                      </button>
+                      @if (isTenantAdmin() && branch.isActive) {
+                        <button
+                          class="btn btn-sm btn-outline-danger btn-icon"
+                          type="button"
+                          ngbTooltip="Deactivate branch"
+                          container="body"
+                          (click)="deactivateBranch(branch)"
+                        >
+                          <i class="bi bi-slash-circle"></i>
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (isTenantAdmin()) {
+    <div class="col-lg-4">
+      <div class="content-card">
+        <div class="card-header-custom">
+          <h2>Create branch</h2>
+          <p>Add a new service center location.</p>
+        </div>
+        <div class="card-body-custom">
+          <form [formGroup]="createForm" (ngSubmit)="createBranch()">
+            <div class="form-section-title">Details</div>
+            <div class="mb-3">
+              <label class="form-label" for="branchCode">Code</label>
+              <input
+                id="branchCode"
+                class="form-control text-uppercase"
+                formControlName="code"
+                placeholder="BR02"
+                [class.is-invalid]="isInvalid(createForm, 'code')"
+              />
+              @if (fieldError(createForm, 'code'); as message) {
+                <div class="invalid-feedback d-block">{{ message }}</div>
+              }
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="branchName">Name</label>
+              <input
+                id="branchName"
+                class="form-control"
+                formControlName="name"
+                [class.is-invalid]="isInvalid(createForm, 'name')"
+              />
+              @if (fieldError(createForm, 'name'); as message) {
+                <div class="invalid-feedback d-block">{{ message }}</div>
+              }
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="branchAddress">Address</label>
+              <textarea
+                id="branchAddress"
+                class="form-control"
+                rows="2"
+                formControlName="address"
+                [class.is-invalid]="isInvalid(createForm, 'address')"
+              ></textarea>
+              @if (fieldError(createForm, 'address'); as message) {
+                <div class="invalid-feedback d-block">{{ message }}</div>
+              }
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label" for="branchPhone">Phone</label>
+                <input
+                  id="branchPhone"
+                  class="form-control"
+                  formControlName="phone"
+                  [class.is-invalid]="isInvalid(createForm, 'phone')"
+                />
+                @if (fieldError(createForm, 'phone'); as message) {
+                  <div class="invalid-feedback d-block">{{ message }}</div>
+                }
+              </div>
+              <div class="col-6">
+                <label class="form-label" for="branchGst">GST number</label>
+                <input
+                  id="branchGst"
+                  class="form-control"
+                  formControlName="gstNumber"
+                  [class.is-invalid]="isInvalid(createForm, 'gstNumber')"
+                />
+                @if (fieldError(createForm, 'gstNumber'); as message) {
+                  <div class="invalid-feedback d-block">{{ message }}</div>
+                }
+              </div>
+            </div>
+            <button class="btn btn-primary w-100" type="submit" [disabled]="saving()">
+              @if (saving()) {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+              }
+              Create branch
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+<ng-template #editModal let-modal>
+  <div class="modal-header border-bottom">
+    <h5 class="modal-title fw-semibold">Edit branch</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body" [formGroup]="editForm">
+    @if (editingBranch(); as branch) {
+      <div class="mb-3">
+        <label class="form-label text-muted small">Code</label>
+        <div class="fw-medium">{{ branch.code }}</div>
+      </div>
+    }
+    <div class="mb-3">
+      <label class="form-label" for="editBranchName">Name</label>
+      <input
+        id="editBranchName"
+        class="form-control"
+        formControlName="name"
+        [class.is-invalid]="isInvalid(editForm, 'name')"
+      />
+      @if (fieldError(editForm, 'name'); as message) {
+        <div class="invalid-feedback d-block">{{ message }}</div>
+      }
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="editBranchAddress">Address</label>
+      <textarea
+        id="editBranchAddress"
+        class="form-control"
+        rows="2"
+        formControlName="address"
+        [class.is-invalid]="isInvalid(editForm, 'address')"
+      ></textarea>
+      @if (fieldError(editForm, 'address'); as message) {
+        <div class="invalid-feedback d-block">{{ message }}</div>
+      }
+    </div>
+    <div class="row g-2 mb-3">
+      <div class="col-6">
+        <label class="form-label" for="editBranchPhone">Phone</label>
+        <input
+          id="editBranchPhone"
+          class="form-control"
+          formControlName="phone"
+          [class.is-invalid]="isInvalid(editForm, 'phone')"
+        />
+        @if (fieldError(editForm, 'phone'); as message) {
+          <div class="invalid-feedback d-block">{{ message }}</div>
+        }
+      </div>
+      <div class="col-6">
+        <label class="form-label" for="editBranchGst">GST number</label>
+        <input
+          id="editBranchGst"
+          class="form-control"
+          formControlName="gstNumber"
+          [class.is-invalid]="isInvalid(editForm, 'gstNumber')"
+        />
+        @if (fieldError(editForm, 'gstNumber'); as message) {
+          <div class="invalid-feedback d-block">{{ message }}</div>
+        }
+      </div>
+    </div>
+    @if (isTenantAdmin()) {
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" formControlName="isActive" id="branchActive" />
+        <label class="form-check-label" for="branchActive">Branch is active</label>
+      </div>
+    }
+  </div>
+  <div class="modal-footer border-top">
+    <button type="button" class="btn btn-light" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="saveEdit(modal)">
+      @if (saving()) {
+        <span class="spinner-border spinner-border-sm me-2"></span>
+      }
+      Save changes
+    </button>
+  </div>
+</ng-template>

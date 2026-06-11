@@ -38,8 +38,8 @@ This commits and pushes any completed work from the previous chunk, then marks t
 | 05 | [chunk-05-authorization.md](chunk-05-authorization.md) | Foundation | 04 | done |
 | 06 | [chunk-06-angular-shell.md](chunk-06-angular-shell.md) | Client shells | 05 | done |
 | 07 | [chunk-07-flutter-shell.md](chunk-07-flutter-shell.md) | Client shells | 05 | done |
-| 08 | [chunk-08-branches.md](chunk-08-branches.md) | Setup | 06 | **next** |
-| 09 | [chunk-09-users.md](chunk-09-users.md) | Setup | 08 | pending |
+| 08 | [chunk-08-branches.md](chunk-08-branches.md) | Setup | 06 | done |
+| 09 | [chunk-09-users.md](chunk-09-users.md) | Setup | 08 | **next** |
 | 10 | [chunk-10-mobile-masters.md](chunk-10-mobile-masters.md) | Setup | 08 | pending |
 | 11 | [chunk-11-customer-api.md](chunk-11-customer-api.md) | Customers | 07, 10 | pending |
 | 12 | [chunk-12-flutter-customers.md](chunk-12-flutter-customers.md) | Customers | 11 | pending |
@@ -78,6 +78,17 @@ This commits and pushes any completed work from the previous chunk, then marks t
 | 5 | 25–29 |
 | 6 | 30–32 |
 | 7 | 33–35 |
+
+## API architecture (all backend chunks)
+
+**CQRS + Clean Architecture** — mandatory for every API feature:
+
+- **Controllers** → `IMediator.Send(command|query)` only (see `BranchesController`)
+- **Application** → `Features/{Feature}/Commands/` and `Queries/` + FluentValidation
+- **Infrastructure** → `Features/{Feature}/Handlers/` (EF, business logic)
+- **No** new `I*Service` / `*Service` pairs for HTTP endpoints
+
+Cursor rule: `.cursor/rules/api-cqrs-clean-architecture.mdc`
 
 ## Key product rules (all chunks)
 

@@ -1,21 +1,19 @@
-using Microsoft.AspNetCore.Authorization;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using OzoneMobileService.Application.DTOs.Platform;
-using OzoneMobileService.Application.Interfaces;
-using OzoneMobileService.Shared;
+using OzoneMobileService.Application.Features.Platform.Commands;
+using OzoneMobileService.Application.Features.Platform.Queries;
 
 namespace OzoneMobileService.Api.Controllers;
 
-[ApiController]
 [Route("api/platform/tax")]
-[Authorize(Policy = AuthorizationPolicies.PlatformSuperAdmin)]
-public class PlatformTaxController(ITaxService taxService) : ControllerBase
+public class PlatformTaxController(IMediator mediator) : PlatformApiControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(TaxConfigurationResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(CancellationToken cancellationToken)
     {
-        var config = await taxService.GetConfigurationAsync(cancellationToken);
+        var config = await mediator.Send(new GetTaxConfigurationQuery(), cancellationToken);
         return Ok(config);
     }
 
@@ -26,7 +24,7 @@ public class PlatformTaxController(ITaxService taxService) : ControllerBase
         [FromBody] UpdateTaxConfigurationRequest request,
         CancellationToken cancellationToken)
     {
-        var config = await taxService.UpdateConfigurationAsync(request, cancellationToken);
+        var config = await mediator.Send(new UpdateTaxConfigurationCommand(request), cancellationToken);
         return config is null
             ? BadRequest(new { message = "Invalid tax configuration." })
             : Ok(config);

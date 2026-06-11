@@ -1,16 +1,15 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OzoneMobileService.Application.DTOs.Common;
 using OzoneMobileService.Application.DTOs.Invoices;
-using OzoneMobileService.Application.Interfaces;
+using OzoneMobileService.Application.Features.Invoices.Queries;
 using OzoneMobileService.Shared;
 
 namespace OzoneMobileService.Api.Controllers;
 
-[Authorize(Policy = AuthorizationPolicies.ReportsRead)]
-[ApiController]
 [Route("api/invoices")]
-public class InvoicesController(IInvoiceService invoiceService) : ControllerBase
+public class InvoicesController(IMediator mediator) : ReportsApiControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<InvoiceResponse>), StatusCodes.Status200OK)]
@@ -20,7 +19,7 @@ public class InvoicesController(IInvoiceService invoiceService) : ControllerBase
         [FromQuery] string? search = null,
         CancellationToken cancellationToken = default)
     {
-        var invoices = await invoiceService.GetInvoicesPagedAsync(page, pageSize, search, cancellationToken);
+        var invoices = await mediator.Send(new GetInvoicesPagedQuery(page, pageSize, search), cancellationToken);
         return Ok(invoices);
     }
 
@@ -30,12 +29,7 @@ public class InvoicesController(IInvoiceService invoiceService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetPdf(Guid id, CancellationToken cancellationToken)
     {
-        var pdf = await invoiceService.GetInvoicePdfAsync(id, cancellationToken);
-        if (pdf is null)
-        {
-            return NotFound();
-        }
-
-        return File(pdf, "application/pdf", $"invoice-{id}.pdf");
+        var pdf = await mediator.Send(new GetInvoicePdfQuery(id), cancellationToken);
+        return pdf is null ? NotFound() : File(pdf, "application/pdf", $"invoice-{id}.pdf");
     }
 }

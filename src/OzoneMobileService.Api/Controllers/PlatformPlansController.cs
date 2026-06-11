@@ -1,21 +1,19 @@
-using Microsoft.AspNetCore.Authorization;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using OzoneMobileService.Application.DTOs.Platform;
-using OzoneMobileService.Application.Interfaces;
-using OzoneMobileService.Shared;
+using OzoneMobileService.Application.Features.Platform.Commands;
+using OzoneMobileService.Application.Features.Platform.Queries;
 
 namespace OzoneMobileService.Api.Controllers;
 
-[ApiController]
 [Route("api/platform/plans")]
-[Authorize(Policy = AuthorizationPolicies.PlatformSuperAdmin)]
-public class PlatformPlansController(IPlatformService platformService) : ControllerBase
+public class PlatformPlansController(IMediator mediator) : PlatformApiControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<SubscriptionPlanResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetPlans(CancellationToken cancellationToken)
     {
-        var plans = await platformService.GetPlansAsync(cancellationToken);
+        var plans = await mediator.Send(new GetPlansQuery(), cancellationToken);
         return Ok(plans);
     }
 
@@ -26,13 +24,10 @@ public class PlatformPlansController(IPlatformService platformService) : Control
         [FromBody] CreateSubscriptionPlanRequest request,
         CancellationToken cancellationToken)
     {
-        var plan = await platformService.CreatePlanAsync(request, cancellationToken);
-        if (plan is null)
-        {
-            return BadRequest(new { message = "Plan code already exists." });
-        }
-
-        return CreatedAtAction(nameof(GetPlans), plan);
+        var plan = await mediator.Send(new CreatePlanCommand(request), cancellationToken);
+        return plan is null
+            ? BadRequest(new { message = "Plan code already exists." })
+            : CreatedAtAction(nameof(GetPlans), plan);
     }
 
     [HttpPut("{id:guid}")]
@@ -43,7 +38,7 @@ public class PlatformPlansController(IPlatformService platformService) : Control
         [FromBody] UpdateSubscriptionPlanRequest request,
         CancellationToken cancellationToken)
     {
-        var plan = await platformService.UpdatePlanAsync(id, request, cancellationToken);
+        var plan = await mediator.Send(new UpdatePlanCommand(id, request), cancellationToken);
         return plan is null ? NotFound() : Ok(plan);
     }
 
@@ -53,7 +48,7 @@ public class PlatformPlansController(IPlatformService platformService) : Control
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<IActionResult> DeletePlan(Guid id, CancellationToken cancellationToken)
     {
-        var deleted = await platformService.DeletePlanAsync(id, cancellationToken);
+        var deleted = await mediator.Send(new DeletePlanCommand(id), cancellationToken);
         return deleted ? NoContent() : NotFound();
     }
 }

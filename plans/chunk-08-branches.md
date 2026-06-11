@@ -2,7 +2,7 @@
 
 **Wave:** 2 — Setup & masters  
 **Depends on:** [chunk-06](chunk-06-angular-shell.md)  
-**Status:** pending
+**Status:** done
 
 ## Goal
 
@@ -10,11 +10,11 @@ Branch CRUD API and Angular setup screens (web only).
 
 ## Tasks
 
-- [ ] `Branch` entity: `Code`, `Name`, `Address`, `Phone`, `GstNumber`, `IsActive`
-- [ ] CRUD API: `GET/POST/PUT/DELETE /api/branches`
-- [ ] FluentValidation for branch DTOs
-- [ ] Angular: branch list, create/edit form, deactivate
-- [ ] TenantAdmin sees all branches; ShopAdmin sees own branch
+- [x] `Branch` entity: `Code`, `Name`, `Address`, `Phone`, `GstNumber`, `IsActive`
+- [x] CRUD API: `GET/POST/PUT/DELETE /api/branches`
+- [x] FluentValidation for branch DTOs
+- [x] Angular: branch list, create/edit form, deactivate
+- [x] TenantAdmin sees all branches; ShopAdmin sees own branch
 
 ## Done criteria
 

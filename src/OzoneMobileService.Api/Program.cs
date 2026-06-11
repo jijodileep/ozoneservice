@@ -1,3 +1,5 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -10,6 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("DevClients", policy =>
@@ -65,6 +69,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("DevClients");
+app.UseMiddleware<ValidationExceptionMiddleware>();
 app.UseMiddleware<PlanLimitExceptionMiddleware>();
 app.UseAuthentication();
 app.UseMiddleware<TenantMiddleware>();

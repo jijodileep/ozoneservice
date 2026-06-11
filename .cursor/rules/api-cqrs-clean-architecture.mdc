@@ -1,0 +1,42 @@
+---
+description: API must use CQRS + Clean Architecture (MediatR, feature folders, thin controllers)
+globs: src/**/*.cs
+alwaysApply: true
+---
+
+# API: CQRS + Clean Architecture
+
+All new and changed API features **must** follow this pattern. Do not add `I*Service` + `*Service` for HTTP endpoints.
+
+## Layers
+
+| Layer | Location | Contains |
+|-------|----------|----------|
+| Api | `OzoneMobileService.Api/Controllers/` | Thin controllers → `IMediator.Send` only |
+| Application | `Application/Features/{Feature}/` | Commands, Queries, DTOs, FluentValidation |
+| Infrastructure | `Infrastructure/Features/{Feature}/Handlers/` | Handlers, EF access, mappers/helpers |
+| Domain | `Domain/Entities/` | Entities only |
+
+## Adding a feature
+
+1. **Query** (read): `Application/Features/{Feature}/Queries/GetXQuery.cs` implements `IQuery<TResponse>`
+2. **Command** (write): `Application/Features/{Feature}/Commands/CreateXCommand.cs` implements `ICommand<TResponse>`
+3. **Validator**: `CreateXCommandValidator` in same Commands folder
+4. **Handler**: `Infrastructure/Features/{Feature}/Handlers/*Handler.cs` implements `IRequestHandler<,>`
+5. **Controller**: inject `IMediator`, map HTTP body → command, `await mediator.Send(...)`
+
+## Controller rules
+
+- Extend the correct base: `SetupApiControllerBase`, `PlatformApiControllerBase`, `ReportsApiControllerBase`, `TenantApiControllerBase`, or `AuthorizedApiControllerBase`
+- No business logic, no `AppDbContext`, no `I*Service` injection
+- Use `RequireTenant()` / `RequireTenantAndUser()` from tenant bases
+
+## Exceptions (allowed services)
+
+Cross-cutting infrastructure helpers only — not HTTP-facing:
+
+- `ISubscriptionLimitService`, `JwtTokenService`, `AuthTokenIssuer`, `BranchAccessService`, etc.
+
+## Reference
+
+Copy `Features/Branches/` or `Features/Auth/` when scaffolding a new feature.

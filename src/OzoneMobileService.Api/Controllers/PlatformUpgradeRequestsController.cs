@@ -1,17 +1,15 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using OzoneMobileService.Application.DTOs.Common;
 using OzoneMobileService.Application.DTOs.Subscription;
-using OzoneMobileService.Application.Interfaces;
+using OzoneMobileService.Application.Features.UpgradeRequests.Commands;
+using OzoneMobileService.Application.Features.UpgradeRequests.Queries;
 using OzoneMobileService.Shared;
 
 namespace OzoneMobileService.Api.Controllers;
 
-[ApiController]
 [Route("api/platform/upgrade-requests")]
-[Authorize(Policy = AuthorizationPolicies.PlatformSuperAdmin)]
-public class PlatformUpgradeRequestsController(IUpgradeRequestService upgradeRequestService) : ControllerBase
+public class PlatformUpgradeRequestsController(IMediator mediator) : PlatformApiControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<UpgradeRequestResponse>), StatusCodes.Status200OK)]
@@ -21,10 +19,8 @@ public class PlatformUpgradeRequestsController(IUpgradeRequestService upgradeReq
         [FromQuery] string? status = UpgradeRequestStatuses.Pending,
         CancellationToken cancellationToken = default)
     {
-        var result = await upgradeRequestService.GetPendingRequestsPagedAsync(
-            page,
-            pageSize,
-            status,
+        var result = await mediator.Send(
+            new GetUpgradeRequestsPagedQuery(page, pageSize, status),
             cancellationToken);
 
         return Ok(result);
@@ -35,13 +31,12 @@ public class PlatformUpgradeRequestsController(IUpgradeRequestService upgradeReq
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Approve(Guid id, CancellationToken cancellationToken)
     {
-        var reviewerId = GetUserId();
-        if (reviewerId is null)
+        if (!TryGetUserId(out var reviewerId))
         {
             return Unauthorized();
         }
 
-        var result = await upgradeRequestService.ApproveRequestAsync(id, reviewerId.Value, cancellationToken);
+        var result = await mediator.Send(new ApproveUpgradeRequestCommand(id, reviewerId), cancellationToken);
         return result is null ? NotFound() : Ok(result);
     }
 
@@ -53,24 +48,15 @@ public class PlatformUpgradeRequestsController(IUpgradeRequestService upgradeReq
         [FromBody] RejectUpgradeRequestRequest request,
         CancellationToken cancellationToken)
     {
-        var reviewerId = GetUserId();
-        if (reviewerId is null)
+        if (!TryGetUserId(out var reviewerId))
         {
             return Unauthorized();
         }
 
-        var result = await upgradeRequestService.RejectRequestAsync(
-            id,
-            reviewerId.Value,
-            request.Reason,
+        var result = await mediator.Send(
+            new RejectUpgradeRequestCommand(id, reviewerId, request.Reason),
             cancellationToken);
 
         return result is null ? NotFound() : Ok(result);
-    }
-
-    private Guid? GetUserId()
-    {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
-        return claim is not null && Guid.TryParse(claim, out var id) ? id : null;
     }
 }

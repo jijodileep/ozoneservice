@@ -1,33 +1,28 @@
-using Microsoft.AspNetCore.Authorization;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using OzoneMobileService.Application.DTOs.Subscription;
 using OzoneMobileService.Application.Exceptions;
+using OzoneMobileService.Application.Features.Subscription.Queries;
+using OzoneMobileService.Application.Features.UpgradeRequests.Commands;
+using OzoneMobileService.Application.Features.UpgradeRequests.Queries;
 using OzoneMobileService.Application.Interfaces;
-using OzoneMobileService.Shared;
 
 namespace OzoneMobileService.Api.Controllers;
 
-[Authorize(Policy = AuthorizationPolicies.SetupWrite)]
-[ApiController]
 [Route("api/subscription")]
-public class SubscriptionController(
-    ISubscriptionService subscriptionService,
-    IUpgradeRequestService upgradeRequestService,
-    ITenantContext tenantContext) : ControllerBase
+public class SubscriptionController(IMediator mediator, ITenantContext tenantContext)
+    : SetupApiControllerBase(tenantContext)
 {
     [HttpGet("options")]
     [ProducesResponseType(typeof(SubscriptionOptionsResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetOptions(CancellationToken cancellationToken)
     {
-        if (!tenantContext.HasTenant)
+        if (RequireTenant(out var tenantId) is { } error)
         {
-            return BadRequest(new { message = "Tenant context required." });
+            return error;
         }
 
-        var options = await subscriptionService.GetOptionsWithPendingAsync(
-            tenantContext.TenantId!.Value,
-            cancellationToken);
-
+        var options = await mediator.Send(new GetSubscriptionOptionsQuery(tenantId), cancellationToken);
         return options is null ? NotFound() : Ok(options);
     }
 
@@ -35,15 +30,12 @@ public class SubscriptionController(
     [ProducesResponseType(typeof(IReadOnlyList<UpgradeRequestResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUpgradeRequests(CancellationToken cancellationToken)
     {
-        if (!tenantContext.HasTenant)
+        if (RequireTenant(out var tenantId) is { } error)
         {
-            return BadRequest(new { message = "Tenant context required." });
+            return error;
         }
 
-        var items = await upgradeRequestService.GetTenantRequestsAsync(
-            tenantContext.TenantId!.Value,
-            cancellationToken);
-
+        var items = await mediator.Send(new GetTenantUpgradeRequestsQuery(tenantId), cancellationToken);
         return Ok(items);
     }
 
@@ -56,20 +48,19 @@ public class SubscriptionController(
         [FromBody] UpgradePlanRequest request,
         CancellationToken cancellationToken)
     {
-        if (!tenantContext.HasTenant)
+        if (RequireTenant(out var tenantId) is { } error)
         {
-            return BadRequest(new { message = "Tenant context required." });
+            return error;
         }
 
         try
         {
-            var result = await upgradeRequestService.RequestUpgradeAsync(
-                tenantContext.TenantId!.Value,
-                request.PlanId,
+            var result = await mediator.Send(
+                new RequestUpgradeCommand(tenantId, request.PlanId),
                 cancellationToken);
 
             return result is null
-                ? BadRequest(new { message = "Invalid plan." })
+                ? BadRequestMessage("Invalid plan.")
                 : CreatedAtAction(nameof(GetUpgradeRequests), result);
         }
         catch (PlanUpgradeException)

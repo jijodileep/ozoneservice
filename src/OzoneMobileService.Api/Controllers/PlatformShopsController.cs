@@ -1,16 +1,14 @@
-using Microsoft.AspNetCore.Authorization;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using OzoneMobileService.Application.DTOs.Common;
 using OzoneMobileService.Application.DTOs.Platform;
-using OzoneMobileService.Application.Interfaces;
-using OzoneMobileService.Shared;
+using OzoneMobileService.Application.Features.Platform.Commands;
+using OzoneMobileService.Application.Features.Platform.Queries;
 
 namespace OzoneMobileService.Api.Controllers;
 
-[ApiController]
 [Route("api/platform/shops")]
-[Authorize(Policy = AuthorizationPolicies.PlatformSuperAdmin)]
-public class PlatformShopsController(IPlatformService platformService) : ControllerBase
+public class PlatformShopsController(IMediator mediator) : PlatformApiControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(PagedResult<ShopResponse>), StatusCodes.Status200OK)]
@@ -20,7 +18,7 @@ public class PlatformShopsController(IPlatformService platformService) : Control
         [FromQuery] string? search = null,
         CancellationToken cancellationToken = default)
     {
-        var shops = await platformService.GetShopsPagedAsync(page, pageSize, search, cancellationToken);
+        var shops = await mediator.Send(new GetShopsPagedQuery(page, pageSize, search), cancellationToken);
         return Ok(shops);
     }
 
@@ -31,13 +29,10 @@ public class PlatformShopsController(IPlatformService platformService) : Control
         [FromBody] CreateShopRequest request,
         CancellationToken cancellationToken)
     {
-        var shop = await platformService.CreateShopAsync(request, cancellationToken);
-        if (shop is null)
-        {
-            return BadRequest(new { message = "Could not create shop. Check plan id, unique code, and admin email." });
-        }
-
-        return CreatedAtAction(nameof(GetShops), new { id = shop.Id }, shop);
+        var shop = await mediator.Send(new CreateShopCommand(request), cancellationToken);
+        return shop is null
+            ? BadRequest(new { message = "Could not create shop. Check plan id, unique code, and admin email." })
+            : CreatedAtAction(nameof(GetShops), new { id = shop.Id }, shop);
     }
 
     [HttpPatch("{id:guid}/suspend")]
@@ -45,7 +40,7 @@ public class PlatformShopsController(IPlatformService platformService) : Control
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Suspend(Guid id, CancellationToken cancellationToken)
     {
-        var ok = await platformService.SuspendShopAsync(id, cancellationToken);
+        var ok = await mediator.Send(new SuspendShopCommand(id), cancellationToken);
         return ok ? NoContent() : NotFound();
     }
 
@@ -54,7 +49,7 @@ public class PlatformShopsController(IPlatformService platformService) : Control
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Activate(Guid id, CancellationToken cancellationToken)
     {
-        var ok = await platformService.ActivateShopAsync(id, cancellationToken);
+        var ok = await mediator.Send(new ActivateShopCommand(id), cancellationToken);
         return ok ? NoContent() : NotFound();
     }
 
@@ -67,7 +62,7 @@ public class PlatformShopsController(IPlatformService platformService) : Control
         [FromBody] AssignPlanRequest request,
         CancellationToken cancellationToken)
     {
-        var ok = await platformService.AssignPlanAsync(id, request.SubscriptionPlanId, cancellationToken);
+        var ok = await mediator.Send(new AssignShopPlanCommand(id, request.SubscriptionPlanId), cancellationToken);
         return ok ? NoContent() : NotFound();
     }
 }

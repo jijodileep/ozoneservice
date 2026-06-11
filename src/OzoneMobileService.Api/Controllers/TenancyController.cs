@@ -1,34 +1,35 @@
-using Microsoft.AspNetCore.Authorization;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using OzoneMobileService.Application.Features.Branches.Queries;
 using OzoneMobileService.Application.Interfaces;
-using OzoneMobileService.Infrastructure.Persistence;
 
 namespace OzoneMobileService.Api.Controllers;
 
-[Authorize]
-[ApiController]
 [Route("api/tenancy")]
-public class TenancyController(ITenantContext tenantContext, AppDbContext dbContext) : ControllerBase
+public class TenancyController(IMediator mediator, ITenantContext tenantContext)
+    : TenantApiControllerBase(tenantContext)
 {
     [HttpGet("context")]
     public IActionResult GetContext() =>
         Ok(new
         {
-            tenantId = tenantContext.TenantId,
-            isPlatformAdmin = tenantContext.IsPlatformAdmin,
-            hasTenant = tenantContext.HasTenant
+            tenantId = TenantContext.TenantId,
+            isPlatformAdmin = TenantContext.IsPlatformAdmin,
+            hasTenant = TenantContext.HasTenant
         });
 
     [HttpGet("branches")]
     public async Task<IActionResult> GetBranches(CancellationToken cancellationToken)
     {
-        var branches = await dbContext.Branches
-            .AsNoTracking()
-            .OrderBy(b => b.Name)
-            .Select(b => new { b.Id, b.Code, b.Name, b.TenantId })
-            .ToListAsync(cancellationToken);
+        if (RequireTenantAndUser(out _, out var userId) is { } error)
+        {
+            return error;
+        }
 
-        return Ok(branches);
+        var branches = await mediator.Send(new GetBranchesQuery(userId), cancellationToken);
+
+        return Ok(branches
+            .Where(b => b.IsActive)
+            .Select(b => new { b.Id, b.Code, b.Name, b.TenantId }));
     }
 }

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { BranchSummary } from './branch.models';
+import { BranchDetail, BranchSummary, CreateBranchRequest, UpdateBranchRequest } from './branch.models';
 
 const BRANCH_ID_KEY = 'ozone_branch_id';
 
@@ -22,6 +22,22 @@ export class BranchService {
           this.ensureSelectedBranch(branches);
         }),
       );
+  }
+
+  getBranches(): Observable<BranchDetail[]> {
+    return this.http.get<BranchDetail[]>(`${environment.apiUrl}/api/branches`);
+  }
+
+  createBranch(request: CreateBranchRequest): Observable<BranchDetail> {
+    return this.http.post<BranchDetail>(`${environment.apiUrl}/api/branches`, request);
+  }
+
+  updateBranch(id: string, request: UpdateBranchRequest): Observable<BranchDetail> {
+    return this.http.put<BranchDetail>(`${environment.apiUrl}/api/branches/${id}`, request);
+  }
+
+  deactivateBranch(id: string): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/api/branches/${id}`);
   }
 
   selectBranch(branchId: string): void {

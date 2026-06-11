@@ -1,20 +1,19 @@
-using Microsoft.AspNetCore.Authorization;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using OzoneMobileService.Application.DTOs.Notifications;
-using OzoneMobileService.Application.Interfaces;
+using OzoneMobileService.Application.Features.Notifications.Commands;
+using OzoneMobileService.Application.Features.Notifications.Queries;
 
 namespace OzoneMobileService.Api.Controllers;
 
-[Authorize]
-[ApiController]
 [Route("api/notifications")]
-public class NotificationsController(INotificationService notificationService) : ControllerBase
+public class NotificationsController(IMediator mediator) : AuthorizedApiControllerBase
 {
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<NotificationResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetNotifications(CancellationToken cancellationToken)
     {
-        var items = await notificationService.GetForCurrentUserAsync(cancellationToken);
+        var items = await mediator.Send(new GetNotificationsQuery(), cancellationToken);
         return Ok(items);
     }
 
@@ -22,7 +21,7 @@ public class NotificationsController(INotificationService notificationService) :
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> MarkRead(Guid id, CancellationToken cancellationToken)
     {
-        await notificationService.MarkReadAsync(id, cancellationToken);
+        await mediator.Send(new MarkNotificationReadCommand(id), cancellationToken);
         return NoContent();
     }
 }
