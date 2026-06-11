@@ -9,6 +9,7 @@ import { PlatformPlansComponent } from './features/platform/platform-plans.compo
 import { PlatformTaxComponent } from './features/platform/platform-tax.component';
 import { PlatformUpgradeRequestsComponent } from './features/platform/platform-upgrade-requests.component';
 import { BranchesComponent } from './features/branches/branches.component';
+import { UsersComponent } from './features/users/users.component';
 import { SubscriptionComponent } from './features/subscription/subscription.component';
 import { ShellComponent } from './layout/shell.component';
 
@@ -34,6 +35,11 @@ export const routes: Routes = [
         path: 'branches',
         canActivate: [roleGuard(['TenantAdmin', 'ShopAdmin'])],
         component: BranchesComponent,
+      },
+      {
+        path: 'users',
+        canActivate: [roleGuard(['TenantAdmin'])],
+        component: UsersComponent,
       },
       {
         path: 'subscription',

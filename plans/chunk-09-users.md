@@ -2,7 +2,7 @@
 
 **Wave:** 2 — Setup & masters  
 **Depends on:** [chunk-08](chunk-08-branches.md)  
-**Status:** pending
+**Status:** done
 
 ## Goal
 
@@ -10,11 +10,11 @@ User management with branch assignment and role selection (web setup).
 
 ## Tasks
 
-- [ ] `UserBranch` join entity (UserId, BranchId)
-- [ ] API: `GET/POST/PUT /api/users`, assign branches, assign roles
-- [ ] **Enforce plan limit:** reject create if tenant active users >= `SubscriptionPlan.MaxUsers` (see [chunk-34](chunk-34-saas-plans-limits.md))
-- [ ] Angular: user list, create user, assign role + branch(es)
-- [ ] Password reset / initial password flow (simple)
+- [x] `UserBranch` join entity (UserId, BranchId)
+- [x] API: `GET/POST/PUT /api/users`, assign branches, assign roles
+- [x] **Enforce plan limit:** reject create if tenant active users >= `SubscriptionPlan.MaxUsers` (see [chunk-34](chunk-34-saas-plans-limits.md))
+- [x] Angular: user list, create user, assign role + branch(es)
+- [x] Password reset / initial password flow (simple)
 
 ## Done criteria
 

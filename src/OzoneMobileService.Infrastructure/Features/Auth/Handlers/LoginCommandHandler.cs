@@ -22,7 +22,9 @@ internal sealed class LoginCommandHandler(
         CancellationToken cancellationToken)
     {
         var user = await userManager.FindByEmailAsync(request.Request.Email);
-        if (user is null || !await userManager.CheckPasswordAsync(user, request.Request.Password))
+        if (user is null
+            || !user.IsActive
+            || !await userManager.CheckPasswordAsync(user, request.Request.Password))
         {
             return null;
         }

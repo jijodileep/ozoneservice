@@ -40,7 +40,7 @@ internal sealed class GetShopsPagedQueryHandler(AppDbContext dbContext)
 
         var tenantIds = tenants.Select(t => t.Id).ToList();
         var userCounts = await dbContext.Users
-            .Where(u => u.TenantId != null && tenantIds.Contains(u.TenantId.Value))
+            .Where(u => u.TenantId != null && u.IsActive && tenantIds.Contains(u.TenantId.Value))
             .GroupBy(u => u.TenantId!.Value)
             .Select(g => new { TenantId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.TenantId, x => x.Count, cancellationToken);

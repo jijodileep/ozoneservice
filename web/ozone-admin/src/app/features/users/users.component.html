@@ -1,0 +1,277 @@
+@if (error()) {
+  <ngb-alert type="danger" class="mb-3" (closed)="error.set(null)">{{ error() }}</ngb-alert>
+}
+
+<div class="row g-4">
+  <div [class]="isTenantAdmin() ? 'col-lg-8' : 'col-12'">
+    <div class="content-card">
+      <div class="card-header-custom">
+        <h2>Users</h2>
+        <p>Manage staff accounts, roles, and branch access.</p>
+      </div>
+      <div class="card-body-custom p-0">
+        @if (loading()) {
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-custom mb-0">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Role</th>
+                  <th>Branches</th>
+                  <th>Status</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (user of users(); track user.id) {
+                  <tr>
+                    <td>
+                      <div class="fw-medium">{{ user.displayName }}</div>
+                      <div class="small text-muted">{{ user.email }}</div>
+                    </td>
+                    <td>{{ roleLabel(user.role) }}</td>
+                    <td class="small text-muted">
+                      @if (user.branches.length) {
+                        @for (branch of user.branches; track branch.id) {
+                          <div>{{ branch.name }} ({{ branch.code }})</div>
+                        }
+                      } @else {
+                        <span>All branches</span>
+                      }
+                    </td>
+                    <td>
+                      <span class="badge" [class.text-bg-success]="user.isActive" [class.text-bg-secondary]="!user.isActive">
+                        {{ user.isActive ? 'Active' : 'Inactive' }}
+                      </span>
+                    </td>
+                    <td class="text-end text-nowrap">
+                      @if (isEditable(user)) {
+                        <button
+                          class="btn btn-sm btn-outline-primary btn-icon me-1"
+                          type="button"
+                          ngbTooltip="Edit user"
+                          container="body"
+                          (click)="openEdit(user)"
+                        >
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button
+                          class="btn btn-sm btn-outline-secondary btn-icon"
+                          type="button"
+                          ngbTooltip="Reset password"
+                          container="body"
+                          (click)="openResetPassword(user)"
+                        >
+                          <i class="bi bi-key"></i>
+                        </button>
+                      } @else {
+                        <span class="text-muted small">—</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (isTenantAdmin()) {
+    <div class="col-lg-4">
+      <div class="content-card">
+        <div class="card-header-custom">
+          <h2>Create user</h2>
+          <p>Add a staff member with role and branch access.</p>
+        </div>
+        <div class="card-body-custom">
+          <form [formGroup]="createForm" (ngSubmit)="createUser()">
+            <div class="form-section-title">Account</div>
+            <div class="mb-3">
+              <label class="form-label" for="userEmail">Email</label>
+              <input
+                id="userEmail"
+                type="email"
+                class="form-control"
+                formControlName="email"
+                [class.is-invalid]="isInvalid(createForm, 'email')"
+              />
+              @if (fieldError(createForm, 'email'); as message) {
+                <div class="invalid-feedback d-block">{{ message }}</div>
+              }
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="userDisplayName">Display name</label>
+              <input
+                id="userDisplayName"
+                class="form-control"
+                formControlName="displayName"
+                [class.is-invalid]="isInvalid(createForm, 'displayName')"
+              />
+              @if (fieldError(createForm, 'displayName'); as message) {
+                <div class="invalid-feedback d-block">{{ message }}</div>
+              }
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="userPassword">Initial password</label>
+              <input
+                id="userPassword"
+                type="password"
+                class="form-control"
+                formControlName="password"
+                [class.is-invalid]="isInvalid(createForm, 'password')"
+              />
+              @if (fieldError(createForm, 'password'); as message) {
+                <div class="invalid-feedback d-block">{{ message }}</div>
+              }
+            </div>
+
+            <div class="form-section-title">Access</div>
+            <div class="mb-3">
+              <label class="form-label" for="userRole">Role</label>
+              <select id="userRole" class="form-select" formControlName="role">
+                @for (role of assignableRoles; track role.value) {
+                  <option [value]="role.value">{{ role.label }}</option>
+                }
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Branches</label>
+              @for (branch of branches(); track branch.id) {
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    [id]="'create-branch-' + branch.id"
+                    [checked]="isBranchSelected(createForm, branch.id)"
+                    (change)="toggleBranch(createForm, branch.id, $any($event.target).checked)"
+                  />
+                  <label class="form-check-label" [for]="'create-branch-' + branch.id">
+                    {{ branch.name }} ({{ branch.code }})
+                  </label>
+                </div>
+              }
+              @if (isInvalid(createForm, 'branchIds')) {
+                <div class="invalid-feedback d-block">{{ fieldError(createForm, 'branchIds') }}</div>
+              }
+            </div>
+
+            <button class="btn btn-primary w-100" type="submit" [disabled]="saving()">
+              @if (saving()) {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+              }
+              Create user
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+<ng-template #editModal let-modal>
+  <div class="modal-header border-bottom">
+    <h5 class="modal-title fw-semibold">Edit user</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body" [formGroup]="editForm">
+    @if (editingUser(); as user) {
+      <div class="mb-3">
+        <label class="form-label text-muted small">Email</label>
+        <div class="fw-medium">{{ user.email }}</div>
+      </div>
+    }
+    <div class="mb-3">
+      <label class="form-label" for="editDisplayName">Display name</label>
+      <input
+        id="editDisplayName"
+        class="form-control"
+        formControlName="displayName"
+        [class.is-invalid]="isInvalid(editForm, 'displayName')"
+      />
+      @if (fieldError(editForm, 'displayName'); as message) {
+        <div class="invalid-feedback d-block">{{ message }}</div>
+      }
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="editRole">Role</label>
+      <select id="editRole" class="form-select" formControlName="role">
+        @for (role of assignableRoles; track role.value) {
+          <option [value]="role.value">{{ role.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Branches</label>
+      @for (branch of branches(); track branch.id) {
+        <div class="form-check">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            [id]="'edit-branch-' + branch.id"
+            [checked]="isBranchSelected(editForm, branch.id)"
+            (change)="toggleBranch(editForm, branch.id, $any($event.target).checked)"
+          />
+          <label class="form-check-label" [for]="'edit-branch-' + branch.id">
+            {{ branch.name }} ({{ branch.code }})
+          </label>
+        </div>
+      }
+      @if (isInvalid(editForm, 'branchIds')) {
+        <div class="invalid-feedback d-block">{{ fieldError(editForm, 'branchIds') }}</div>
+      }
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" formControlName="isActive" id="userActive" />
+      <label class="form-check-label" for="userActive">User is active</label>
+    </div>
+  </div>
+  <div class="modal-footer border-top">
+    <button type="button" class="btn btn-light" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="saveEdit(modal)">
+      @if (saving()) {
+        <span class="spinner-border spinner-border-sm me-2"></span>
+      }
+      Save changes
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #resetModal let-modal>
+  <div class="modal-header border-bottom">
+    <h5 class="modal-title fw-semibold">Reset password</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body" [formGroup]="resetForm">
+    @if (resettingUser(); as user) {
+      <p class="text-muted small mb-3">Set a new password for {{ user.displayName }}.</p>
+    }
+    <div class="mb-3">
+      <label class="form-label" for="newPassword">New password</label>
+      <input
+        id="newPassword"
+        type="password"
+        class="form-control"
+        formControlName="newPassword"
+        [class.is-invalid]="isInvalid(resetForm, 'newPassword')"
+      />
+      @if (fieldError(resetForm, 'newPassword'); as message) {
+        <div class="invalid-feedback d-block">{{ message }}</div>
+      }
+    </div>
+  </div>
+  <div class="modal-footer border-top">
+    <button type="button" class="btn btn-light" (click)="modal.dismiss()">Cancel</button>
+    <button type="button" class="btn btn-primary" [disabled]="saving()" (click)="saveResetPassword(modal)">
+      @if (saving()) {
+        <span class="spinner-border spinner-border-sm me-2"></span>
+      }
+      Reset password
+    </button>
+  </div>
+</ng-template>

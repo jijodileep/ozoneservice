@@ -73,7 +73,9 @@ public class SubscriptionLimitService(AppDbContext dbContext) : ISubscriptionLim
             return null;
         }
 
-        var userCount = await dbContext.Users.CountAsync(u => u.TenantId == tenantId, cancellationToken);
+        var userCount = await dbContext.Users.CountAsync(
+            u => u.TenantId == tenantId && u.IsActive,
+            cancellationToken);
         var branchCount = await dbContext.Branches.CountAsync(b => b.TenantId == tenantId, cancellationToken);
 
         return new TenantUsage(tenant.SubscriptionPlan, userCount, branchCount);
