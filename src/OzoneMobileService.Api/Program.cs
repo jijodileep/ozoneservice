@@ -12,10 +12,19 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("WebAdmin", policy =>
-        policy.WithOrigins("http://localhost:4200")
-            .AllowAnyHeader()
-            .AllowAnyMethod());
+    options.AddPolicy("DevClients", policy =>
+        policy.SetIsOriginAllowed(origin =>
+        {
+            if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+            {
+                return false;
+            }
+
+            // Angular (4200), Flutter web (dynamic port), and other local dev UIs.
+            return uri.Host is "localhost" or "127.0.0.1";
+        })
+        .AllowAnyHeader()
+        .AllowAnyMethod());
 });
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -55,7 +64,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("WebAdmin");
+app.UseCors("DevClients");
 app.UseMiddleware<PlanLimitExceptionMiddleware>();
 app.UseAuthentication();
 app.UseMiddleware<TenantMiddleware>();

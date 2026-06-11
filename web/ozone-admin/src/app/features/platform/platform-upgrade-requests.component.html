@@ -1,0 +1,68 @@
+@if (flash()) {
+  <ngb-alert type="info" class="mb-3" (closed)="flash.set(null)">{{ flash() }}</ngb-alert>
+}
+@if (error()) {
+  <ngb-alert type="danger" class="mb-3" (closed)="error.set(null)">{{ error() }}</ngb-alert>
+}
+
+<div class="content-card">
+  <div class="card-header-custom d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+      <h2>Upgrade requests</h2>
+      <p>Review shop plan upgrade requests, approve to apply plan and generate subscription invoice.</p>
+    </div>
+    <select class="form-select form-select-sm" style="width: auto" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event); onFilterChange()">
+      <option value="Pending">Pending</option>
+      <option value="Approved">Approved</option>
+      <option value="Rejected">Rejected</option>
+      <option value="">All</option>
+    </select>
+  </div>
+
+  <div class="card-body-custom p-0">
+    @if (loading()) {
+      <div class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+    } @else if (!requests().length) {
+      <div class="empty-state"><p class="mb-0">No upgrade requests.</p></div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-custom mb-0">
+          <thead>
+            <tr>
+              <th>Shop</th>
+              <th>Current → Requested</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>Requested</th>
+              <th>Invoice</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (req of requests(); track req.id) {
+              <tr>
+                <td class="fw-medium">{{ req.tenantName }}</td>
+                <td>{{ req.currentPlanName }} → <strong>{{ req.requestedPlanName }}</strong></td>
+                <td>₹{{ req.requestedPlanPrice | number: '1.0-0' }}</td>
+                <td>
+                  <span class="badge" [class.text-bg-warning]="req.status === 'Pending'" [class.text-bg-success]="req.status === 'Approved'" [class.text-bg-danger]="req.status === 'Rejected'">
+                    {{ req.status }}
+                  </span>
+                </td>
+                <td class="text-muted small">{{ req.requestedAt | date: 'medium' }}</td>
+                <td class="small">{{ req.invoiceNumber ?? '—' }}</td>
+                <td class="text-end text-nowrap">
+                  @if (req.status === 'Pending') {
+                    <button class="btn btn-sm btn-success me-1" type="button" (click)="approve(req)">Approve</button>
+                    <button class="btn btn-sm btn-outline-danger" type="button" (click)="reject(req)">Reject</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-table-pagination [page]="page()" [pageSize]="pageSize()" [totalCount]="totalCount()" (pageChange)="onPageChange($event)" />
+    }
+  </div>
+</div>

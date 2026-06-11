@@ -174,7 +174,19 @@ See [`docs/dev-credentials.md`](docs/dev-credentials.md#postgresql-docker).
 
 
 
-Implementation is split into small chunks under [`plans/`](plans/README.md). Chunks 01–06 and 33–34 are complete; next is [chunk-07](plans/chunk-07-flutter-shell.md).
+Implementation is split into small chunks under [`plans/`](plans/README.md). Chunks 01–07 and 33–34 are complete; next is [chunk-08](plans/chunk-08-branches.md).
+
+### Flutter shop app (`mobile/ozone_shop`)
+
+```powershell
+cd mobile/ozone_shop
+flutter pub get
+flutter run
+# Physical device on LAN:
+flutter run --dart-define=API_BASE_URL=http://<your-pc-ip>:5055
+```
+
+Default API URL: `http://localhost:5055` (Windows/macOS/iOS simulator), `http://10.0.2.2:5055` (Android emulator). Dev login: `staff@localhost.dev` / `Staff@123`.
 
 ### EF Core migrations
 

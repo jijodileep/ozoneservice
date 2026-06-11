@@ -1,0 +1,65 @@
+@if (message()) {
+  <ngb-alert type="success" class="mb-3" (closed)="message.set(null)">{{ message() }}</ngb-alert>
+}
+@if (error()) {
+  <ngb-alert type="danger" class="mb-3" (closed)="error.set(null)">{{ error() }}</ngb-alert>
+}
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="content-card">
+      <div class="card-header-custom">
+        <h2>Tax master (India)</h2>
+        <p>Configure CGST and SGST rates applied to subscription upgrade invoices.</p>
+      </div>
+      <div class="card-body-custom">
+        @if (loading()) {
+          <div class="text-center py-4"><div class="spinner-border text-primary"></div></div>
+        } @else {
+          <form [formGroup]="form" (ngSubmit)="save()">
+            <div class="mb-3">
+              <label class="form-label">Configuration name</label>
+              <input class="form-control" formControlName="name" placeholder="GST 18% (CGST 9% + SGST 9%)" />
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label class="form-label">CGST rate (%)</label>
+                <input class="form-control" type="number" step="0.01" formControlName="cgstRate" />
+              </div>
+              <div class="col-6">
+                <label class="form-label">SGST rate (%)</label>
+                <input class="form-control" type="number" step="0.01" formControlName="sgstRate" />
+              </div>
+            </div>
+            <p class="text-muted small mb-4">
+              Total GST: <strong>{{ totalGst() | number: '1.2-2' }}%</strong>
+              @if (updatedAt()) {
+                · Last updated {{ updatedAt() | date: 'medium' }}
+              }
+            </p>
+            <button class="btn btn-primary" type="submit" [disabled]="saving()">
+              @if (saving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+              Save tax master
+            </button>
+          </form>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="content-card h-100">
+      <div class="card-header-custom">
+        <h2>How it works</h2>
+      </div>
+      <div class="card-body-custom">
+        <ul class="mb-0 ps-3">
+          <li class="mb-2">Shops <strong>request</strong> a higher plan from Upgrade Plan.</li>
+          <li class="mb-2">Super admin <strong>approves</strong> under Upgrade Requests.</li>
+          <li class="mb-2">On approval, plan is applied and a <strong>subscription invoice</strong> is generated with CGST + SGST lines.</li>
+          <li>Intrastate Indian GST: CGST + SGST = total GST (e.g. 9% + 9% = 18%).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

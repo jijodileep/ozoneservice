@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using OzoneMobileService.Application.DTOs.Platform;
 using OzoneMobileService.Application.DTOs.Subscription;
-using OzoneMobileService.Application.Exceptions;
 using OzoneMobileService.Application.Interfaces;
 using OzoneMobileService.Domain.Entities;
 using OzoneMobileService.Infrastructure.Persistence;
@@ -9,13 +8,21 @@ using OzoneMobileService.Shared;
 
 namespace OzoneMobileService.Infrastructure.Services;
 
-public class SubscriptionService(
-    AppDbContext dbContext,
-    ISubscriptionLimitService subscriptionLimitService) : ISubscriptionService
+public class SubscriptionService(AppDbContext dbContext) : ISubscriptionService
 {
-    public async Task<SubscriptionOptionsResponse?> GetOptionsAsync(
+    public Task<SubscriptionOptionsResponse?> GetOptionsAsync(
         Guid tenantId,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) =>
+        GetOptionsInternalAsync(tenantId, cancellationToken);
+
+    public Task<SubscriptionOptionsResponse?> GetOptionsWithPendingAsync(
+        Guid tenantId,
+        CancellationToken cancellationToken = default) =>
+        GetOptionsInternalAsync(tenantId, cancellationToken);
+
+    private async Task<SubscriptionOptionsResponse?> GetOptionsInternalAsync(
+        Guid tenantId,
+        CancellationToken cancellationToken)
     {
         var tenant = await dbContext.Tenants
             .AsNoTracking()
@@ -34,77 +41,39 @@ public class SubscriptionService(
             .Select(p => MapPlan(p))
             .ToListAsync(cancellationToken);
 
+        var pending = await dbContext.SubscriptionUpgradeRequests
+            .AsNoTracking()
+            .Include(r => r.RequestedPlan)
+            .Include(r => r.CurrentPlan)
+            .Include(r => r.Tenant)
+            .Include(r => r.Invoice)
+            .Where(r => r.TenantId == tenantId && r.Status == UpgradeRequestStatuses.Pending)
+            .OrderByDescending(r => r.RequestedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        UpgradeRequestResponse? pendingResponse = pending is null
+            ? null
+            : new UpgradeRequestResponse(
+                pending.Id,
+                pending.TenantId,
+                pending.Tenant.Name,
+                pending.CurrentPlan.Name,
+                pending.RequestedPlan.Name,
+                pending.RequestedPlan.Price,
+                pending.Status,
+                pending.RequestedAt,
+                pending.ReviewedAt,
+                pending.RejectionReason,
+                pending.InvoiceId,
+                pending.Invoice?.InvoiceNumber);
+
         return new SubscriptionOptionsResponse(
             tenant.SubscriptionPlanId,
             tenant.SubscriptionPlan.Name,
             tenant.SubscriptionPlan.TierOrder,
             tenant.SubscriptionExpiresAt,
-            upgrades);
-    }
-
-    public async Task<bool> UpgradePlanAsync(
-        Guid tenantId,
-        Guid planId,
-        CancellationToken cancellationToken = default)
-    {
-        var tenant = await dbContext.Tenants
-            .Include(t => t.SubscriptionPlan)
-            .FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
-
-        var newPlan = await dbContext.SubscriptionPlans
-            .FirstOrDefaultAsync(p => p.Id == planId && p.IsActive, cancellationToken);
-
-        if (tenant is null || newPlan is null)
-        {
-            return false;
-        }
-
-        if (newPlan.TierOrder <= tenant.SubscriptionPlan.TierOrder)
-        {
-            throw new PlanUpgradeException();
-        }
-
-        await subscriptionLimitService.ValidatePlanAssignmentAsync(tenantId, planId, cancellationToken);
-
-        tenant.SubscriptionPlanId = newPlan.Id;
-        tenant.SubscriptionExpiresAt = DateTime.UtcNow.AddMonths(newPlan.BillingPeriodMonths);
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        await CreateUpgradeNotificationsAsync(tenant, newPlan, cancellationToken);
-        return true;
-    }
-
-    private async Task CreateUpgradeNotificationsAsync(
-        Tenant tenant,
-        SubscriptionPlan newPlan,
-        CancellationToken cancellationToken)
-    {
-        var now = DateTime.UtcNow;
-        var message =
-            $"{tenant.Name} upgraded to {newPlan.Name} (₹{newPlan.Price}/{newPlan.BillingPeriodMonths}mo). Expires {tenant.SubscriptionExpiresAt:yyyy-MM-dd}.";
-
-        dbContext.AppNotifications.AddRange(
-            new AppNotification
-            {
-                Id = Guid.NewGuid(),
-                TenantId = tenant.Id,
-                RoleTarget = Roles.TenantAdmin,
-                Title = "Plan upgraded",
-                Message = message,
-                NotificationType = NotificationTypes.PlanUpgraded,
-                CreatedAt = now
-            },
-            new AppNotification
-            {
-                Id = Guid.NewGuid(),
-                RoleTarget = Roles.PlatformSuperAdmin,
-                Title = "Tenant plan upgraded",
-                Message = message,
-                NotificationType = NotificationTypes.PlanUpgraded,
-                CreatedAt = now
-            });
-
-        await dbContext.SaveChangesAsync(cancellationToken);
+            upgrades,
+            pendingResponse);
     }
 
     private static SubscriptionPlanResponse MapPlan(SubscriptionPlan plan) =>

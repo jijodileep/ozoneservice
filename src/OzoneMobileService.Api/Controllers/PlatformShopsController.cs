@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OzoneMobileService.Application.DTOs.Common;
 using OzoneMobileService.Application.DTOs.Platform;
 using OzoneMobileService.Application.Interfaces;
 using OzoneMobileService.Shared;
@@ -12,10 +13,14 @@ namespace OzoneMobileService.Api.Controllers;
 public class PlatformShopsController(IPlatformService platformService) : ControllerBase
 {
     [HttpGet]
-    [ProducesResponseType(typeof(IReadOnlyList<ShopResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetShops(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(PagedResult<ShopResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetShops(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? search = null,
+        CancellationToken cancellationToken = default)
     {
-        var shops = await platformService.GetShopsAsync(cancellationToken);
+        var shops = await platformService.GetShopsPagedAsync(page, pageSize, search, cancellationToken);
         return Ok(shops);
     }
 

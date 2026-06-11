@@ -8,5 +8,7 @@ public interface ISubscriptionService
         Guid tenantId,
         CancellationToken cancellationToken = default);
 
-    Task<bool> UpgradePlanAsync(Guid tenantId, Guid planId, CancellationToken cancellationToken = default);
+    Task<SubscriptionOptionsResponse?> GetOptionsWithPendingAsync(
+        Guid tenantId,
+        CancellationToken cancellationToken = default);
 }

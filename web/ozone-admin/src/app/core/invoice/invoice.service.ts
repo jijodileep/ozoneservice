@@ -1,7 +1,8 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { PagedResult, PaginationParams } from '../models/pagination.models';
 
 export interface InvoiceSummary {
   id: string;
@@ -9,8 +10,11 @@ export interface InvoiceSummary {
   customerName: string;
   customerPhone: string;
   subTotal: number;
+  cgstAmount: number;
+  sgstAmount: number;
   taxAmount: number;
   totalAmount: number;
+  invoiceType: string;
   issuedAt: string;
   status: string;
 }
@@ -19,8 +23,16 @@ export interface InvoiceSummary {
 export class InvoiceService {
   private readonly http = inject(HttpClient);
 
-  getInvoices(): Observable<InvoiceSummary[]> {
-    return this.http.get<InvoiceSummary[]>(`${environment.apiUrl}/api/invoices`);
+  getInvoicesPaged(params: PaginationParams): Observable<PagedResult<InvoiceSummary>> {
+    let httpParams = new HttpParams()
+      .set('page', params.page)
+      .set('pageSize', params.pageSize);
+    if (params.search?.trim()) {
+      httpParams = httpParams.set('search', params.search.trim());
+    }
+    return this.http.get<PagedResult<InvoiceSummary>>(`${environment.apiUrl}/api/invoices`, {
+      params: httpParams,
+    });
   }
 
   pdfUrl(id: string): string {

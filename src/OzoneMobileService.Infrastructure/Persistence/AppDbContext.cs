@@ -22,6 +22,8 @@ public class AppDbContext(
     public DbSet<UserBranch> UserBranches => Set<UserBranch>();
     public DbSet<AppNotification> AppNotifications => Set<AppNotification>();
     public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<TaxConfiguration> TaxConfigurations => Set<TaxConfiguration>();
+    public DbSet<SubscriptionUpgradeRequest> SubscriptionUpgradeRequests => Set<SubscriptionUpgradeRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -70,8 +72,11 @@ public class AppDbContext(
             entity.Property(i => i.CustomerPhone).HasMaxLength(20).IsRequired();
             entity.Property(i => i.Status).HasMaxLength(20).IsRequired();
             entity.Property(i => i.SubTotal).HasPrecision(18, 2);
+            entity.Property(i => i.CgstAmount).HasPrecision(18, 2);
+            entity.Property(i => i.SgstAmount).HasPrecision(18, 2);
             entity.Property(i => i.TaxAmount).HasPrecision(18, 2);
             entity.Property(i => i.TotalAmount).HasPrecision(18, 2);
+            entity.Property(i => i.InvoiceType).HasMaxLength(20).IsRequired();
             entity.HasOne(i => i.Branch)
                 .WithMany()
                 .HasForeignKey(i => i.BranchId)
@@ -102,6 +107,40 @@ public class AppDbContext(
                 .WithMany(t => t.Branches)
                 .HasForeignKey(b => b.TenantId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<TaxConfiguration>(entity =>
+        {
+            entity.ToTable("tax_configurations");
+            entity.HasKey(t => t.Id);
+            entity.Property(t => t.Name).HasMaxLength(100).IsRequired();
+            entity.Property(t => t.CgstRate).HasPrecision(5, 2);
+            entity.Property(t => t.SgstRate).HasPrecision(5, 2);
+        });
+
+        modelBuilder.Entity<SubscriptionUpgradeRequest>(entity =>
+        {
+            entity.ToTable("subscription_upgrade_requests");
+            entity.HasKey(r => r.Id);
+            entity.Property(r => r.Status).HasMaxLength(20).IsRequired();
+            entity.Property(r => r.RejectionReason).HasMaxLength(500);
+            entity.HasIndex(r => new { r.TenantId, r.Status });
+            entity.HasOne(r => r.RequestedPlan)
+                .WithMany()
+                .HasForeignKey(r => r.RequestedPlanId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(r => r.CurrentPlan)
+                .WithMany()
+                .HasForeignKey(r => r.CurrentPlanId)
+                .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(r => r.Tenant)
+                .WithMany()
+                .HasForeignKey(r => r.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(r => r.Invoice)
+                .WithMany()
+                .HasForeignKey(r => r.InvoiceId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<UserBranch>(entity =>

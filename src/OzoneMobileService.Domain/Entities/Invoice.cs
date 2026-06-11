@@ -16,9 +16,15 @@ public class Invoice : BaseEntity
 
     public decimal SubTotal { get; set; }
 
+    public decimal CgstAmount { get; set; }
+
+    public decimal SgstAmount { get; set; }
+
     public decimal TaxAmount { get; set; }
 
     public decimal TotalAmount { get; set; }
+
+    public string InvoiceType { get; set; } = "Service";
 
     public DateTime IssuedAt { get; set; }
 

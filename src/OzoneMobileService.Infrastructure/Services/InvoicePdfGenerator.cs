@@ -12,7 +12,12 @@ public static class InvoicePdfGenerator
         QuestPDF.Settings.License = LicenseType.Community;
     }
 
-    public static byte[] Generate(Invoice invoice, string shopName, string branchName)
+    public static byte[] Generate(
+        Invoice invoice,
+        string shopName,
+        string branchName,
+        decimal cgstRate,
+        decimal sgstRate)
     {
         return Document.Create(container =>
         {
@@ -24,6 +29,7 @@ public static class InvoicePdfGenerator
                     col.Item().Text(shopName).FontSize(20).Bold();
                     col.Item().Text(branchName).FontSize(12);
                     col.Item().Text($"Invoice {invoice.InvoiceNumber}").FontSize(16).Bold();
+                    col.Item().Text($"Type: {invoice.InvoiceType}");
                     col.Item().Text($"Date: {invoice.IssuedAt:yyyy-MM-dd}");
                 });
 
@@ -37,11 +43,29 @@ public static class InvoicePdfGenerator
                         row.RelativeItem().Text("Subtotal").Bold();
                         row.ConstantItem(100).AlignRight().Text($"₹{invoice.SubTotal:N2}");
                     });
-                    col.Item().Row(row =>
+
+                    if (invoice.CgstAmount > 0 || invoice.SgstAmount > 0)
                     {
-                        row.RelativeItem().Text("Tax");
-                        row.ConstantItem(100).AlignRight().Text($"₹{invoice.TaxAmount:N2}");
-                    });
+                        col.Item().Row(row =>
+                        {
+                            row.RelativeItem().Text($"CGST @ {cgstRate:N2}%");
+                            row.ConstantItem(100).AlignRight().Text($"₹{invoice.CgstAmount:N2}");
+                        });
+                        col.Item().Row(row =>
+                        {
+                            row.RelativeItem().Text($"SGST @ {sgstRate:N2}%");
+                            row.ConstantItem(100).AlignRight().Text($"₹{invoice.SgstAmount:N2}");
+                        });
+                    }
+                    else
+                    {
+                        col.Item().Row(row =>
+                        {
+                            row.RelativeItem().Text("Tax");
+                            row.ConstantItem(100).AlignRight().Text($"₹{invoice.TaxAmount:N2}");
+                        });
+                    }
+
                     col.Item().PaddingTop(8).Row(row =>
                     {
                         row.RelativeItem().Text("Total").Bold().FontSize(14);

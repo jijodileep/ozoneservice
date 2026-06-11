@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OzoneMobileService.Application.DTOs.Common;
 using OzoneMobileService.Application.DTOs.Invoices;
 using OzoneMobileService.Application.Interfaces;
 using OzoneMobileService.Shared;
@@ -12,10 +13,14 @@ namespace OzoneMobileService.Api.Controllers;
 public class InvoicesController(IInvoiceService invoiceService) : ControllerBase
 {
     [HttpGet]
-    [ProducesResponseType(typeof(IReadOnlyList<InvoiceResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetInvoices(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(PagedResult<InvoiceResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetInvoices(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? search = null,
+        CancellationToken cancellationToken = default)
     {
-        var invoices = await invoiceService.GetInvoicesAsync(cancellationToken);
+        var invoices = await invoiceService.GetInvoicesPagedAsync(page, pageSize, search, cancellationToken);
         return Ok(invoices);
     }
 

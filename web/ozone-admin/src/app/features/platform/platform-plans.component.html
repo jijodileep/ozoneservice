@@ -43,18 +43,28 @@
                       </span>
                     </td>
                     <td class="text-end text-nowrap">
-                      <button class="btn btn-sm btn-outline-primary me-1" type="button" (click)="openEdit(plan)">
+                      <button
+                        class="btn btn-sm btn-outline-primary btn-icon me-1"
+                        type="button"
+                        ngbTooltip="Edit plan"
+                        container="body"
+                        (click)="openEdit(plan)"
+                      >
                         <i class="bi bi-pencil"></i>
                       </button>
-                      <button
-                        class="btn btn-sm btn-outline-danger"
-                        type="button"
-                        [disabled]="plan.tenantCount > 0"
+                      <span
                         [ngbTooltip]="plan.tenantCount > 0 ? 'Plan is assigned to shops' : 'Delete plan'"
-                        (click)="deletePlan(plan)"
+                        container="body"
                       >
-                        <i class="bi bi-trash"></i>
-                      </button>
+                        <button
+                          class="btn btn-sm btn-outline-danger btn-icon"
+                          type="button"
+                          [disabled]="plan.tenantCount > 0"
+                          (click)="deletePlan(plan)"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </span>
                     </td>
                   </tr>
                 }

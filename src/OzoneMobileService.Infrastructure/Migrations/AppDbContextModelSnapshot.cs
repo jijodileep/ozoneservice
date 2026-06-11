@@ -328,6 +328,10 @@ namespace OzoneMobileService.Infrastructure.Migrations
                     b.Property<Guid>("BranchId")
                         .HasColumnType("uuid");
 
+                    b.Property<decimal>("CgstAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -349,8 +353,17 @@ namespace OzoneMobileService.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("InvoiceType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<DateTime>("IssuedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("SgstAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -473,6 +486,99 @@ namespace OzoneMobileService.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("subscription_plans", (string)null);
+                });
+
+            modelBuilder.Entity("OzoneMobileService.Domain.Entities.SubscriptionUpgradeRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("CurrentPlanId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("InvoiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("RequestedPlanId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReviewedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CurrentPlanId");
+
+                    b.HasIndex("InvoiceId");
+
+                    b.HasIndex("RequestedPlanId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Status");
+
+                    b.ToTable("subscription_upgrade_requests", (string)null);
+                });
+
+            modelBuilder.Entity("OzoneMobileService.Domain.Entities.TaxConfiguration", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("CgstRate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("SgstRate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("tax_configurations", (string)null);
                 });
 
             modelBuilder.Entity("OzoneMobileService.Domain.Entities.Tenant", b =>
@@ -619,6 +725,40 @@ namespace OzoneMobileService.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OzoneMobileService.Domain.Entities.SubscriptionUpgradeRequest", b =>
+                {
+                    b.HasOne("OzoneMobileService.Domain.Entities.SubscriptionPlan", "CurrentPlan")
+                        .WithMany()
+                        .HasForeignKey("CurrentPlanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OzoneMobileService.Domain.Entities.Invoice", "Invoice")
+                        .WithMany()
+                        .HasForeignKey("InvoiceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("OzoneMobileService.Domain.Entities.SubscriptionPlan", "RequestedPlan")
+                        .WithMany()
+                        .HasForeignKey("RequestedPlanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OzoneMobileService.Domain.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CurrentPlan");
+
+                    b.Navigation("Invoice");
+
+                    b.Navigation("RequestedPlan");
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("OzoneMobileService.Domain.Entities.Tenant", b =>

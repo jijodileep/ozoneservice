@@ -1,6 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { AuthService } from '../core/auth/auth.service';
 import { BranchService } from '../core/branch/branch.service';
 import { NotificationItem, NotificationService } from '../core/notification/notification.service';
@@ -8,8 +7,9 @@ import { NotificationItem, NotificationService } from '../core/notification/noti
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, NgbDropdownModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './shell.component.html',
+  styleUrl: './shell.component.scss',
 })
 export class ShellComponent implements OnInit {
   readonly auth = inject(AuthService);
@@ -17,6 +17,7 @@ export class ShellComponent implements OnInit {
   private readonly notifications = inject(NotificationService);
 
   readonly notificationItems = signal<NotificationItem[]>([]);
+  readonly notificationsOpen = signal(false);
 
   ngOnInit(): void {
     if (!this.auth.profile()) {
@@ -26,6 +27,21 @@ export class ShellComponent implements OnInit {
       this.branch.loadBranches().subscribe();
     }
     this.loadNotifications();
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.notificationsOpen.set(false);
+  }
+
+  toggleNotifications(event: Event): void {
+    event.stopPropagation();
+    this.notificationsOpen.update((open) => !open);
+  }
+
+  closeNotifications(event?: Event): void {
+    event?.stopPropagation();
+    this.notificationsOpen.set(false);
   }
 
   userInitials(): string {

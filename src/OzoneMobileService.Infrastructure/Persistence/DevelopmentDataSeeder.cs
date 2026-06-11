@@ -23,6 +23,7 @@ public static class DevelopmentDataSeeder
         await SeedSuperAdminAsync(userManager);
         await SeedDevTenantAdminAsync(db, userManager);
         await SeedDevShopUsersAsync(db, userManager);
+        await SeedTaxConfigurationAsync(db);
         await SeedDevInvoiceAsync(db);
         await PatchDevTenantSubscriptionAsync(db);
     }
@@ -37,6 +38,26 @@ public static class DevelopmentDataSeeder
 
         var plan = await db.SubscriptionPlans.FirstAsync(p => p.Id == tenant.SubscriptionPlanId);
         tenant.SubscriptionExpiresAt = DateTime.UtcNow.AddMonths(plan.BillingPeriodMonths);
+        await db.SaveChangesAsync();
+    }
+
+    private static async Task SeedTaxConfigurationAsync(AppDbContext db)
+    {
+        if (await db.TaxConfigurations.AnyAsync())
+        {
+            return;
+        }
+
+        db.TaxConfigurations.Add(new TaxConfiguration
+        {
+            Id = Guid.Parse("00000000-0000-0000-0000-000000000030"),
+            Name = "GST 18% (CGST 9% + SGST 9%)",
+            CgstRate = 9m,
+            SgstRate = 9m,
+            IsActive = true,
+            UpdatedAt = DateTime.UtcNow
+        });
+
         await db.SaveChangesAsync();
     }
 
@@ -56,8 +77,11 @@ public static class DevelopmentDataSeeder
             CustomerName = "Sample Customer",
             CustomerPhone = "9876543210",
             SubTotal = 1500,
+            CgstAmount = 135,
+            SgstAmount = 135,
             TaxAmount = 270,
             TotalAmount = 1770,
+            InvoiceType = InvoiceTypes.Service,
             IssuedAt = DateTime.UtcNow.AddDays(-2),
             Status = "Issued",
             CreatedAt = DateTime.UtcNow

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { PlanSummary } from '../platform/platform.models';
+import { PlanSummary, UpgradeRequestSummary } from '../platform/platform.models';
 
 export interface SubscriptionOptions {
   currentPlanId: string;
@@ -10,6 +10,7 @@ export interface SubscriptionOptions {
   currentTierOrder: number;
   subscriptionExpiresAt: string | null;
   upgradeOptions: PlanSummary[];
+  pendingRequest: UpgradeRequestSummary | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -20,7 +21,13 @@ export class SubscriptionService {
     return this.http.get<SubscriptionOptions>(`${environment.apiUrl}/api/subscription/options`);
   }
 
-  upgrade(planId: string): Observable<void> {
-    return this.http.post<void>(`${environment.apiUrl}/api/subscription/upgrade`, { planId });
+  requestUpgrade(planId: string): Observable<UpgradeRequestSummary> {
+    return this.http.post<UpgradeRequestSummary>(`${environment.apiUrl}/api/subscription/upgrade-request`, {
+      planId,
+    });
+  }
+
+  getUpgradeRequests(): Observable<UpgradeRequestSummary[]> {
+    return this.http.get<UpgradeRequestSummary[]>(`${environment.apiUrl}/api/subscription/upgrade-requests`);
   }
 }

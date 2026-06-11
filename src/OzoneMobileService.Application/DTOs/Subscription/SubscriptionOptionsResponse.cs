@@ -7,4 +7,5 @@ public sealed record SubscriptionOptionsResponse(
     string CurrentPlanName,
     int CurrentTierOrder,
     DateTime? SubscriptionExpiresAt,
-    IReadOnlyList<SubscriptionPlanResponse> UpgradeOptions);
+    IReadOnlyList<SubscriptionPlanResponse> UpgradeOptions,
+    UpgradeRequestResponse? PendingRequest = null);

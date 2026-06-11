@@ -65,6 +65,19 @@ Connection string (see `appsettings.Development.json`):
 Host=localhost;Port=5432;Database=ozone_mobile_service;Username=ozone;Password=ozone_dev_password
 ```
 
+## Flutter shop app (`mobile/ozone_shop`)
+
+| Field | Value |
+|-------|-------|
+| Default login | `staff@localhost.dev` / `Staff@123` |
+| API (desktop/iOS sim) | `http://localhost:5055` |
+| API (Android emulator) | `http://10.0.2.2:5055` |
+
+```powershell
+cd mobile/ozone_shop
+flutter run
+```
+
 ## Quick login — tenant admin (PowerShell)
 
 ```powershell

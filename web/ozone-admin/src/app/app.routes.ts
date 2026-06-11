@@ -6,6 +6,8 @@ import { InvoicesComponent } from './features/invoices/invoices.component';
 import { LoginComponent } from './features/login/login.component';
 import { PlatformDashboardComponent } from './features/platform/platform-dashboard.component';
 import { PlatformPlansComponent } from './features/platform/platform-plans.component';
+import { PlatformTaxComponent } from './features/platform/platform-tax.component';
+import { PlatformUpgradeRequestsComponent } from './features/platform/platform-upgrade-requests.component';
 import { SubscriptionComponent } from './features/subscription/subscription.component';
 import { ShellComponent } from './layout/shell.component';
 
@@ -41,6 +43,16 @@ export const routes: Routes = [
         path: 'platform/plans',
         canActivate: [roleGuard(['PlatformSuperAdmin'])],
         component: PlatformPlansComponent,
+      },
+      {
+        path: 'platform/upgrade-requests',
+        canActivate: [roleGuard(['PlatformSuperAdmin'])],
+        component: PlatformUpgradeRequestsComponent,
+      },
+      {
+        path: 'platform/tax',
+        canActivate: [roleGuard(['PlatformSuperAdmin'])],
+        component: PlatformTaxComponent,
       },
     ],
   },

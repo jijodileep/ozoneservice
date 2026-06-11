@@ -1,7 +1,7 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { NgbAlertModule } from '@ng-bootstrap/ng-bootstrap';
-import { PlanSummary } from '../../core/platform/platform.models';
+import { PlanSummary, UpgradeRequestSummary } from '../../core/platform/platform.models';
 import { SubscriptionService } from '../../core/subscription/subscription.service';
 
 @Component({
@@ -16,30 +16,45 @@ export class SubscriptionComponent implements OnInit {
   readonly currentPlanName = signal('');
   readonly expiresAt = signal<string | null>(null);
   readonly upgradeOptions = signal<PlanSummary[]>([]);
+  readonly pendingRequest = signal<UpgradeRequestSummary | null>(null);
+  readonly requestHistory = signal<UpgradeRequestSummary[]>([]);
   readonly message = signal<string | null>(null);
   readonly error = signal<string | null>(null);
+  readonly requesting = signal(false);
 
   ngOnInit(): void {
+    this.loadOptions();
+    this.subscription.getUpgradeRequests().subscribe({
+      next: (items) => this.requestHistory.set(items.filter((r) => r.status !== 'Pending')),
+    });
+  }
+
+  loadOptions(): void {
     this.subscription.getOptions().subscribe({
       next: (options) => {
         this.currentPlanName.set(options.currentPlanName);
         this.expiresAt.set(options.subscriptionExpiresAt);
         this.upgradeOptions.set(options.upgradeOptions);
+        this.pendingRequest.set(options.pendingRequest);
       },
       error: () => this.error.set('Could not load subscription options.'),
     });
   }
 
-  upgrade(plan: PlanSummary): void {
+  requestUpgrade(plan: PlanSummary): void {
     this.message.set(null);
     this.error.set(null);
-    this.subscription.upgrade(plan.id).subscribe({
-      next: () => {
-        this.message.set(`Upgraded to ${plan.name}. Subscription renewed.`);
-        this.currentPlanName.set(plan.name);
-        this.upgradeOptions.set(this.upgradeOptions().filter((p) => p.id !== plan.id));
+    this.requesting.set(true);
+    this.subscription.requestUpgrade(plan.id).subscribe({
+      next: (request) => {
+        this.requesting.set(false);
+        this.pendingRequest.set(request);
+        this.message.set(`Upgrade to ${plan.name} requested. Awaiting super admin approval.`);
       },
-      error: (err) => this.error.set(err.error?.message ?? 'Upgrade failed.'),
+      error: (err) => {
+        this.requesting.set(false);
+        this.error.set(err.error?.message ?? 'Could not submit upgrade request.');
+      },
     });
   }
 }

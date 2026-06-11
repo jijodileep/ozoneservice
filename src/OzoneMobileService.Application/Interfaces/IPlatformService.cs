@@ -1,3 +1,4 @@
+using OzoneMobileService.Application.DTOs.Common;
 using OzoneMobileService.Application.DTOs.Platform;
 
 namespace OzoneMobileService.Application.Interfaces;
@@ -18,6 +19,12 @@ public interface IPlatformService
     Task<bool> DeletePlanAsync(Guid planId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<ShopResponse>> GetShopsAsync(CancellationToken cancellationToken = default);
+
+    Task<PagedResult<ShopResponse>> GetShopsPagedAsync(
+        int page,
+        int pageSize,
+        string? search,
+        CancellationToken cancellationToken = default);
 
     Task<ShopResponse?> CreateShopAsync(CreateShopRequest request, CancellationToken cancellationToken = default);
 

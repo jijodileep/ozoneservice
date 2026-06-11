@@ -2,7 +2,7 @@
 
 **Wave:** 1 — Client shells  
 **Depends on:** [chunk-05](chunk-05-authorization.md)  
-**Status:** pending
+**Status:** done
 
 ## Goal
 
@@ -10,14 +10,14 @@ Flutter shop app with login, secure token storage, API client, and branch contex
 
 ## Tasks
 
-- [ ] Create `mobile/ozone_shop` Flutter project
-- [ ] Add packages: `dio`, `flutter_secure_storage`, `provider` or `riverpod`
-- [ ] Login screen → `POST /api/auth/login`
-- [ ] Store tokens in secure storage
-- [ ] Dio client with auth + branch interceptors
-- [ ] After login, pin branch from user profile (no branch picker for ShopStaff)
-- [ ] Home placeholder screen with logout
-- [ ] API base URL config (dev/prod)
+- [x] Create `mobile/ozone_shop` Flutter project
+- [x] Add packages: `dio`, `flutter_secure_storage`, `provider` or `riverpod`
+- [x] Login screen → `POST /api/auth/login`
+- [x] Store tokens in secure storage
+- [x] Dio client with auth + branch interceptors
+- [x] After login, pin branch from user profile (no branch picker for ShopStaff)
+- [x] Home placeholder screen with logout
+- [x] API base URL config (dev/prod)
 
 ## Files to create
 

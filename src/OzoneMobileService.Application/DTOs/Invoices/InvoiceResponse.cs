@@ -6,7 +6,10 @@ public sealed record InvoiceResponse(
     string CustomerName,
     string CustomerPhone,
     decimal SubTotal,
+    decimal CgstAmount,
+    decimal SgstAmount,
     decimal TaxAmount,
     decimal TotalAmount,
+    string InvoiceType,
     DateTime IssuedAt,
     string Status);

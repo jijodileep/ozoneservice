@@ -37,8 +37,8 @@ This commits and pushes any completed work from the previous chunk, then marks t
 | 04 | [chunk-04-multi-tenancy.md](chunk-04-multi-tenancy.md) | Foundation | 03 | done |
 | 05 | [chunk-05-authorization.md](chunk-05-authorization.md) | Foundation | 04 | done |
 | 06 | [chunk-06-angular-shell.md](chunk-06-angular-shell.md) | Client shells | 05 | done |
-| 07 | [chunk-07-flutter-shell.md](chunk-07-flutter-shell.md) | Client shells | 05 | **next** |
-| 08 | [chunk-08-branches.md](chunk-08-branches.md) | Setup | 06 | pending |
+| 07 | [chunk-07-flutter-shell.md](chunk-07-flutter-shell.md) | Client shells | 05 | done |
+| 08 | [chunk-08-branches.md](chunk-08-branches.md) | Setup | 06 | **next** |
 | 09 | [chunk-09-users.md](chunk-09-users.md) | Setup | 08 | pending |
 | 10 | [chunk-10-mobile-masters.md](chunk-10-mobile-masters.md) | Setup | 08 | pending |
 | 11 | [chunk-11-customer-api.md](chunk-11-customer-api.md) | Customers | 07, 10 | pending |
