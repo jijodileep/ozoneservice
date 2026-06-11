@@ -1,0 +1,12 @@
+using OzoneMobileService.Domain.Common;
+
+namespace OzoneMobileService.Domain.Entities;
+
+public class MobileBrand : BaseEntity
+{
+    public string Name { get; set; } = string.Empty;
+
+    public bool IsActive { get; set; } = true;
+
+    public ICollection<MobileModel> Models { get; set; } = [];
+}

@@ -24,6 +24,9 @@ public class AppDbContext(
     public DbSet<Invoice> Invoices => Set<Invoice>();
     public DbSet<TaxConfiguration> TaxConfigurations => Set<TaxConfiguration>();
     public DbSet<SubscriptionUpgradeRequest> SubscriptionUpgradeRequests => Set<SubscriptionUpgradeRequest>();
+    public DbSet<MobileBrand> MobileBrands => Set<MobileBrand>();
+    public DbSet<MobileModel> MobileModels => Set<MobileModel>();
+    public DbSet<MobileVariant> MobileVariants => Set<MobileVariant>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -154,6 +157,38 @@ public class AppDbContext(
             entity.HasOne(ub => ub.Branch)
                 .WithMany()
                 .HasForeignKey(ub => ub.BranchId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<MobileBrand>(entity =>
+        {
+            entity.ToTable("mobile_brands");
+            entity.HasKey(b => b.Id);
+            entity.HasIndex(b => new { b.TenantId, b.Name }).IsUnique();
+            entity.Property(b => b.Name).HasMaxLength(100).IsRequired();
+        });
+
+        modelBuilder.Entity<MobileModel>(entity =>
+        {
+            entity.ToTable("mobile_models");
+            entity.HasKey(m => m.Id);
+            entity.HasIndex(m => new { m.BrandId, m.Name }).IsUnique();
+            entity.Property(m => m.Name).HasMaxLength(100).IsRequired();
+            entity.HasOne(m => m.Brand)
+                .WithMany(b => b.Models)
+                .HasForeignKey(m => m.BrandId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<MobileVariant>(entity =>
+        {
+            entity.ToTable("mobile_variants");
+            entity.HasKey(v => v.Id);
+            entity.HasIndex(v => new { v.ModelId, v.Name }).IsUnique();
+            entity.Property(v => v.Name).HasMaxLength(100).IsRequired();
+            entity.HasOne(v => v.Model)
+                .WithMany(m => m.Variants)
+                .HasForeignKey(v => v.ModelId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

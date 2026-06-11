@@ -40,8 +40,8 @@ This commits and pushes any completed work from the previous chunk, then marks t
 | 07 | [chunk-07-flutter-shell.md](chunk-07-flutter-shell.md) | Client shells | 05 | done |
 | 08 | [chunk-08-branches.md](chunk-08-branches.md) | Setup | 06 | done |
 | 09 | [chunk-09-users.md](chunk-09-users.md) | Setup | 08 | done |
-| 10 | [chunk-10-mobile-masters.md](chunk-10-mobile-masters.md) | Setup | 08 | **next** |
-| 11 | [chunk-11-customer-api.md](chunk-11-customer-api.md) | Customers | 07, 10 | pending |
+| 10 | [chunk-10-mobile-masters.md](chunk-10-mobile-masters.md) | Setup | 08 | done |
+| 11 | [chunk-11-customer-api.md](chunk-11-customer-api.md) | Customers | 07, 10 | **next** |
 | 12 | [chunk-12-flutter-customers.md](chunk-12-flutter-customers.md) | Customers | 11 | pending |
 | 13 | [chunk-13-job-api-basics.md](chunk-13-job-api-basics.md) | Jobs | 12 | pending |
 | 14 | [chunk-14-flutter-jobs-list.md](chunk-14-flutter-jobs-list.md) | Jobs | 13 | pending |

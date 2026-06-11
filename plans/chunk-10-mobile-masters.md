@@ -2,7 +2,7 @@
 
 **Wave:** 2 — Setup & masters  
 **Depends on:** [chunk-08](chunk-08-branches.md)  
-**Status:** pending
+**Status:** done
 
 ## Goal
 
@@ -10,10 +10,10 @@ Mobile brand → model → variant hierarchy; CRUD on web, read-only list for mo
 
 ## Tasks
 
-- [ ] Entities: `MobileBrand`, `MobileModel`, `MobileVariant`
-- [ ] CRUD API under `/api/mobile-masters/`
-- [ ] Angular: nested list UI (brands → models → variants)
-- [ ] `GET` endpoints for Flutter dropdowns (read-only)
+- [x] Entities: `MobileBrand`, `MobileModel`, `MobileVariant`
+- [x] CRUD API under `/api/mobile-masters/`
+- [x] Angular: nested list UI (brands → models → variants)
+- [x] `GET` endpoints for Flutter dropdowns (read-only)
 
 ## Done criteria
 
